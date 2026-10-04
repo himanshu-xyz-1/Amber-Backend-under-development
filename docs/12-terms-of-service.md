@@ -36,16 +36,16 @@ To guarantee deterministic system latency (<100ms webhook ingestion, <3s triage)
 │                     │                          │ • Read-Only IAM Diagnostics           │
 │                     │                          │ • 50+ Built-in Runbooks & Local Ollama│
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
-│ LEVEL 1: AUTONOMOUS │ • Monthly: $2,099/mo     │ • Up to 40 Production Microservices   │
-│ (Automated Fixes)   │ • Annual: $1,749/mo      │ • Up to 150 Kubernetes / Cloud Nodes  │
-│                     │   (Billed $20,988/yr)    │ • 10,000 alerts / month               │
+│ LEVEL 1: AUTONOMOUS │ • Monthly: $2,499/mo     │ • Up to 35 Production Microservices   │
+│ (Automated Fixes)   │ • Annual: $2,099/mo      │ • Up to 200 Kubernetes / Cloud Nodes  │
+│                     │   (Billed $25,188/yr)    │ • Unlimited Alert Ingestion           │
 │                     │                          │ • 100 Included Mutating Actions / mo  │
 │                     │                          │ • Multi-Channel HITL (Slack/TG/WA)    │
 │                     │                          │ • Offline Ed25519 License Validation  │
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
-│ LEVEL 2: RESPONSE   │ • Monthly: $3,699/mo     │ • Custom / Unlimited Microservices    │
-│ (Enterprise Response│ • Annual: $3,079/mo      │ • Dedicated Single-Tenant VPC Cluster │
-│  & SRE Escalation)  │   (Billed $36,948/yr)    │ • 500 High-Volume Remediations / mo   │
+│ LEVEL 2: RESPONSE   │ • Monthly: $4,499/mo     │ • Custom / Unlimited Microservices    │
+│ (Enterprise Response│ • Annual: $3,699/mo      │ • Dedicated Single-Tenant VPC Cluster │
+│  & SRE Escalation)  │   (Billed $44,388/yr)    │ • 500 High-Volume Remediations / mo   │
 │                     │                          │ • < 15-min Incident Bridge Escalation │
 │                     │                          │ • Full White-Glove Runbook Eng        │
 │                     │                          │ • Strictly Limited to 5 Design Orgs   │

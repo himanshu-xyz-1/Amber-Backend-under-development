@@ -40,7 +40,7 @@ async def dispatch_incident_notifications(
 
     if not license_manager.is_valid:
         import os
-        contact_url = os.getenv("AMBER_CONTACT_URL", "https://amber-frontend-xyz.pages.dev/#contact")
+        contact_url = os.getenv("AMBER_CONTACT_URL", "https://ambersre.xyz/#connect")
         logger.warning(
             "⚠️  [AMBER COMMUNITY EDITION] Multi-channel alerts (Slack, Telegram, WhatsApp) are locked.\n"
             f"👉 Visit {contact_url} to get your Enterprise License Key."

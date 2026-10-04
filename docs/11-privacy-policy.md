@@ -110,6 +110,6 @@ Upon customer written request or organization de-provisioning:
 ## 7. Contact Information & Privacy Office
 
 For privacy inquiries, data subject access requests (DSAR), or Data Processing Addendum (DPA) execution:
-- **Privacy Office**: `privacy@amber.sh`
-- **Security Response Team**: `security@amber.sh`
+- **Privacy & Security Intake**: `amber.incident@gmail.com`
+- **Official Website**: `https://ambersre.xyz/#connect`
 - **Physical Address**: Amber SRE Technologies Inc., 548 Market St, Suite 48210, San Francisco, CA 94104, USA.

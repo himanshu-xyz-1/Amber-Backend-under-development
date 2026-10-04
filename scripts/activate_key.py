@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from backend.app.core.license import LicenseManager, license_manager
 
-DEFAULT_CONTACT_URL = os.getenv("AMBER_CONTACT_URL", "https://amber-frontend-xyz.pages.dev/#contact")
+DEFAULT_CONTACT_URL = os.getenv("AMBER_CONTACT_URL", "https://ambersre.xyz/#connect")
 
 
 def persist_license_to_env(key: str, env_path: str = ".env"):

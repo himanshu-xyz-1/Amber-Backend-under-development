@@ -23,6 +23,11 @@ DEFAULT_KEY_PATH = Path(
 )
 
 TIER_CONFIG = {
+    "community": {
+        "max_nodes": 50,
+        "max_services": 15,
+        "features": ["triage", "root_cause_analysis", "post_mortem", "read_only"]
+    },
     "observe": {
         "max_nodes": 50,
         "max_services": 15,
@@ -136,7 +141,7 @@ def generate_license(
 def main():
     parser = argparse.ArgumentParser(description="Issue cryptographically signed Amber SRE Enterprise License Keys")
     parser.add_argument("--org", required=True, help="Organization / Client Name (e.g., 'Swiggy', 'Acme Corp')")
-    parser.add_argument("--tier", default="autonomous", choices=["observe", "autonomous", "response", "agency"], help="Subscription Tier")
+    parser.add_argument("--tier", default="autonomous", choices=["community", "observe", "autonomous", "response", "agency"], help="Subscription Tier")
     parser.add_argument("--days", type=int, default=30, help="License validity duration in days (e.g. 14, 30, 365)")
     parser.add_argument("--nodes", type=int, default=None, help="Custom node count override (optional)")
 
