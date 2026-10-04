@@ -1,0 +1,61 @@
+Business Source License 1.1
+
+Parameters
+
+Licensor:
+Amber Technologies (https://ambersre.xyz)
+
+Licensed Work:
+Amber Autonomous Incident Remediation & SRE Engine (Backend)
+
+Additional Use Grant:
+You may make use of the Licensed Work free of charge for internal evaluation, testing,
+development, and self-hosted production deployment, strictly subject to the following
+Community Edition constraints:
+
+1. COMMUNITY QUOTA LIMITS:
+   (a) Infrastructure Scale: Up to a maximum of fifty (50) Cloud or Kubernetes compute nodes;
+   (b) Service Scale: Up to a maximum of fifteen (15) production microservices;
+   (c) Intake Throughput: Up to a maximum of one thousand (1,000) ingested alerts per calendar month.
+
+2. COMMERCIAL RESTRICTIONS:
+   Use of the Licensed Work beyond the Community Quota Limits, or utilization of Enterprise features
+   (including but not limited to automated mutating cluster remediation, multi-channel approval bridges,
+   priority response SLAs, and custom volume scalability) strictly requires an active, cryptographically
+   verified Amber Enterprise License Key issued by the Licensor.
+
+3. ANTI-COMPETITION / HOSTED SERVICE PROHIBITION:
+   You may NOT make the functionality of the Licensed Work available to third parties as a managed service,
+   hosted service (SaaS), cloud offering, or embedded product that competes with the Licensor's commercial
+   products or offerings, nor may you sublicense, resell, or distribute white-labeled copies of the Licensed Work.
+
+Change Date:
+October 4, 2030
+
+Change License:
+Apache License, Version 2.0
+
+-------------------------------------------------------------------------------------------------------
+
+TERMS AND CONDITIONS
+
+1. Grant of License.
+Licensor hereby grants you the right to copy, modify, create derivative works, redistribute, and make
+internal use of the Licensed Work, solely in accordance with the Additional Use Grant and subject to all
+prohibitions set forth above.
+
+2. Commercial Licensing.
+If you require usage beyond the Community Quota Limits, or seek to utilize the Licensed Work in an
+enterprise multi-cluster deployment, you must obtain a commercial license from Amber Technologies:
+Contact: https://ambersre.xyz/#connect | Email: amber.incident@gmail.com
+
+3. Intellectual Property.
+All title, ownership rights, and intellectual property rights in and to the Licensed Work remain solely
+with Amber Technologies.
+
+4. Disclaimer of Warranties.
+THE LICENSED WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
+LICENSED WORK OR THE USE OR OTHER DEALINGS IN THE LICENSED WORK.

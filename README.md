@@ -226,9 +226,15 @@ tests/test_license.py::test_community_tier_quotas PASSED                 [ 30%]
 
 ---
 
-## 📄 License & Community Support
+## 📄 License & Commercial Terms
 
-- **Amber Community Edition:** Source-Available / Free Forever for self-hosted infrastructure.
-- **Enterprise Open Core:** Commercial extensions for automated mutating remediation, multi-channel approvals, and white-glove SRE SLAs.
-- **Website & Documentation:** [https://ambersre.xyz](https://ambersre.xyz)
-- **GitHub Issues:** [https://github.com/himanshu-xyz-1/Amber/issues](https://github.com/himanshu-xyz-1/Amber/issues)
+Amber Backend is licensed under the **Business Source License 1.1 (BSL 1.1)**:
+
+- **Free Community Edition:** Free forever for internal development, testing, and self-hosted production clusters **strictly within Community Tier parameters**:
+  - Up to **50 Nodes** (Cloud or Kubernetes)
+  - Up to **15 Production Services**
+  - Up to **1,000 Ingested Alerts/month**
+  - Non-compete: Offering Amber as a hosted SaaS or managed cloud service is strictly prohibited.
+- **Enterprise Commercial License:** Any deployment exceeding Community Tier limits (e.g., >50 nodes, >15 services) or requiring automated mutating cluster healing, multi-channel approval bridges, and white-glove response SLAs requires an official **Amber Enterprise License Key**.
+- **Contact & Enterprise Inquiries:** [https://ambersre.xyz/#connect](https://ambersre.xyz/#connect) · `amber.incident@gmail.com`
+- **Frontend Licensing:** The Amber web dashboard and client interfaces are **Proprietary & Closed-Source** (All Rights Reserved by Amber Technologies).
