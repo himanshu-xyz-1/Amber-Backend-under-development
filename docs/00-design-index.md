@@ -30,7 +30,7 @@ Start with the PRD, then follow the numbered sequence. Each document is self-con
 | 09 | [API Management](./09-api-management.md) | API versioning (/api/v1), full endpoint map, request/response standards, cursor-based pagination, webhook security, OpenAPI spec, API gateway considerations, SDK roadmap |
 | 10 | [Future Growth](./10-future-growth.md) | Product roadmap phases, multi-tenancy migration path, Kubernetes migration, observability stack, billing/monetization, plugin architecture, SOC 2 compliance, team scaling |
 | 11 | [Privacy Policy & Data](./11-privacy-policy.md) | Data collection boundaries, zero-training guarantee, in-memory PII/secret scrubbing, LLM isolation, data residency, retention & GDPR purge |
-| 12 | [Terms of Service & Security](./12-terms-of-service.md) | Subscription tiers (Observer, Autopilot, Partner) & usage limits, zero-hallucination safe execution guarantee, emergency kill-switch, SLA & liability |
+| 12 | [Terms of Service & Security](./12-terms-of-service.md) | Subscription tiers (Community Free, Autonomous, Response) & usage limits, deterministic safe execution guarantee, emergency kill-switch, SLA & liability |
 
 ---
 

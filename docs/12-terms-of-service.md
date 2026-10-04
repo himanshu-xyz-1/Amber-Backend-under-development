@@ -28,23 +28,24 @@ To guarantee deterministic system latency (<100ms webhook ingestion, <3s triage)
 ├─────────────────────┬──────────────────────────┬───────────────────────────────────────┤
 │ TIER / COMMITMENT   │ PRICING (USD)            │ INFRASTRUCTURE & EXECUTION LIMITS     │
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
-│ LEVEL 1: OBSERVE    │ • Monthly: $799/mo       │ • Up to 15 Production Microservices   │
-│ (Incident           │ • Annual: $649/mo        │ • Up to 50 Kubernetes / Cloud Nodes   │
-│  Intelligence)      │   (Billed $7,788/yr)     │ • 1,000 alerts / month                │
+│ COMMUNITY TIER      │ • $0 / Month             │ • Up to 15 Production Microservices   │
+│ (Self-Hosted,       │ • Free Forever           │ • Up to 50 Kubernetes / Cloud Nodes   │
+│  Air-Gapped SRE)    │   Zero License Key Req   │ • 1,000 alerts / month                │
 │                     │                          │ • Alert Storm Deduplication (< 80ms)  │
 │                     │                          │ • Deterministic RCA Proof Blocks      │
-│                     │                          │ • Read-Only IAM (Zero Writes)         │
+│                     │                          │ • Read-Only IAM Diagnostics           │
+│                     │                          │ • 50+ Built-in Runbooks & Local Ollama│
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
-│ LEVEL 2: AUTONOMOUS │ • Monthly: $1,799/mo     │ • Up to 35 Production Microservices   │
-│ (Automated Fixes)   │ • Annual: $1,499/mo      │ • Up to 200 Kubernetes / Cloud Nodes  │
-│                     │   (Billed $17,988/yr)    │ • Unlimited Alert Ingestion           │
-│                     │                          │ • 100 Included Remediations / month   │
-│                     │                          │ • Governed HITL Approvals Included    │
-│                     │                          │ • 5 Tailored Runbooks Authored        │
+│ LEVEL 1: AUTONOMOUS │ • Monthly: $2,099/mo     │ • Up to 40 Production Microservices   │
+│ (Automated Fixes)   │ • Annual: $1,749/mo      │ • Up to 150 Kubernetes / Cloud Nodes  │
+│                     │   (Billed $20,988/yr)    │ • 10,000 alerts / month               │
+│                     │                          │ • 100 Included Mutating Actions / mo  │
+│                     │                          │ • Multi-Channel HITL (Slack/TG/WA)    │
+│                     │                          │ • Offline Ed25519 License Validation  │
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
-│ LEVEL 3: RESPONSE   │ • Monthly: $2,799/mo     │ • Custom / Unlimited Microservices    │
-│ (Enterprise Response│ • Annual: $2,299/mo      │ • Dedicated Single-Tenant VPC Cluster │
-│  & SRE Escalation)  │   (Billed $27,588/yr)    │ • 500 High-Volume Remediations / mo   │
+│ LEVEL 2: RESPONSE   │ • Monthly: $3,699/mo     │ • Custom / Unlimited Microservices    │
+│ (Enterprise Response│ • Annual: $3,079/mo      │ • Dedicated Single-Tenant VPC Cluster │
+│  & SRE Escalation)  │   (Billed $36,948/yr)    │ • 500 High-Volume Remediations / mo   │
 │                     │                          │ • < 15-min Incident Bridge Escalation │
 │                     │                          │ • Full White-Glove Runbook Eng        │
 │                     │                          │ • Strictly Limited to 5 Design Orgs   │
@@ -52,12 +53,12 @@ To guarantee deterministic system latency (<100ms webhook ingestion, <3s triage)
 ```
 
 ### 2.1. Overage & Fair-Use Remediation Policy
-- **Alert Storm Bursting**: Amber buffers up to 500 alerts/sec without packet loss during incidents. Sustained alert volume exceeding allocations by >20% across two consecutive billing cycles triggers an automated tier graduation recommendation.
-- **Remediation Quota Extensions**: Organizations on Level 2 (Autonomous) that exhaust their 100 remediation quota within a billing cycle may purchase supplementary packs at **$15 per verified remediation**, or transition actions to Human-In-The-Loop (HITL) review at zero additional surcharge. Organizations on Level 3 (Response) retain an allowance of 500 verified remediations per month, with custom overage allowances provisioned per enterprise order form.
+- **Alert Storm Bursting**: Amber buffers up to 500+ alerts/sec without packet loss during incidents using Redis Streams.
+- **Remediation Quota Extensions**: Organizations on Level 1 (Autonomous) that exhaust their 100 remediation quota within a billing cycle may purchase supplementary packs at **$15 per verified remediation**, or transition actions to Human-In-The-Loop (HITL) review at zero additional surcharge. Organizations on Level 2 (Response) retain an allowance of 500 verified remediations per month, with custom overage allowances provisioned per enterprise order form.
 
 ---
 
-## 3. The "Zero-Hallucination" & Safe Execution Guarantee
+## 3. Deterministic Dual-Plane Safe Execution Guarantee
 
 ### 3.1. Deterministic Guardrail Thesis (Core Safety Protocol)
 Amber explicitly does **not** allow probabilistic Large Language Models (LLMs) to execute arbitrary bash commands or mutating cluster calls. The platform operates under a strict dual-plane architecture:
