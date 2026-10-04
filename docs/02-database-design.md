@@ -1,18 +1,17 @@
 # Amber System Design: Database Architecture
 
-## 1. Database Selection & Justification
+## 1. Database Selection & Strategy
 
-Amber's operational requirements demand strong ACID compliance for incident state, real-time event streaming for alert ingestion, and vector search capabilities for RAG-based runbook retrieval.
+Amber employs a dual-tier database strategy designed for zero friction out-of-the-box while scaling to enterprise VPC workloads:
 
-*   **Primary Database: PostgreSQL**
+*   **Default Engine: Embedded SQLite (`amber.db`)**
+    *   *Role:* Default zero-configuration engine for local development, Community Edition, and single-instance VPC nodes.
+    *   *Why:* Zero external database server required; creates all tables on startup via SQLAlchemy async engine (`aiosqlite`). Perfect for fast evaluations, developer workstations, and edge deployments.
+*   **Enterprise Engine: PostgreSQL 16 + pgvector (Optional Plug-in)**
+    *   *Role:* Multi-container production clusters and enterprise VPC deployments.
     *   *Why:* Relational data model perfectly fits hierarchical structure (Org -> Incident -> Alert -> Tool Invocation). Strong consistency is non-negotiable for audit logs and execution states. Native JSONB support allows flexible storage for raw webhook payloads and agent states.
-    *   *Alternative:* MongoDB (Lacks strict schema constraints needed for RBAC/Auditing), MySQL (Inferior JSON and vector extension support).
-*   **Vector Store: pgvector (PostgreSQL Extension)**
-    *   *Why:* Keeps runbook embeddings in the same database as transactional data. Eliminates data synchronization complexity, reduces architectural moving parts, and allows hybrid queries (e.g., "Find embeddings matching this vector WHERE org_id = X").
-    *   *Alternative:* Pinecone/Weaviate (Overkill for current scale, introduces network latency and operational overhead).
-*   **Ephemeral State & Queuing: Redis**
+*   **Ephemeral State & Queuing: Redis 7**
     *   *Why:* Sub-millisecond latency for rate limiting, high-throughput Stream support for 500 alerts/sec ingestion buffer, and fast TTL-based storage for JWT blocklists.
-    *   *Alternative:* Memcached (No stream support), Kafka (Too heavy for the current scale).
 
 ### Decision Matrix
 

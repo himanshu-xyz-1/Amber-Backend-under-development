@@ -47,6 +47,7 @@ def test_approvals_require_auth():
 
 
 def test_webhook_secret_verification():
+    from unittest.mock import patch, AsyncMock
     client = TestClient(app)
 
     orig_secret = settings.WEBHOOK_SECRET
@@ -66,12 +67,13 @@ def test_webhook_secret_verification():
         assert res_bad.status_code == 401
 
         # 3. Valid webhook secret -> 202 Accepted
-        res_ok = client.post(
-            "/api/v1/webhooks/prometheus",
-            json={"alertname": "HighCPU"},
-            headers={"X-Webhook-Secret": "webhook_guard_secret_999"}
-        )
-        assert res_ok.status_code == 202
+        with patch("backend.app.api.v1.webhooks.process_alert_into_incident", new_callable=AsyncMock):
+            res_ok = client.post(
+                "/api/v1/webhooks/prometheus",
+                json={"alertname": "HighCPU"},
+                headers={"X-Webhook-Secret": "webhook_guard_secret_999"}
+            )
+            assert res_ok.status_code == 202
     finally:
         settings.WEBHOOK_SECRET = orig_secret
 

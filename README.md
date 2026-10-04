@@ -12,7 +12,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-1c1917?style=for-the-badge&logo=langchain&logoColor=facc15)](https://github.com/langchain-ai/langgraph)
 [![Redis](https://img.shields.io/badge/Redis-7%20Streams-dc2626?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20%2B%20pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Database](https://img.shields.io/badge/Database-Embedded%20SQLite%20(Zero--Setup)-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org)
 [![Docker](https://img.shields.io/badge/Docker%20Compose-5%20Containers-2496ed?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![Cloudflare](https://img.shields.io/badge/Edge%20Platform-Cloudflare%20Workers-f38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://ambersre.xyz)
 [![Telegram](https://img.shields.io/badge/Telegram%20Bot-%40ambersre__alert__bot-229ED9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/ambersre_alert_bot)
@@ -46,7 +46,7 @@ Amber is engineered as a resilient, single-tenant, in-VPC multi-container cluste
 | **Event Stream Buffer** | **Redis 7 (Alpine) Streams** | Sliding-window alert storm deduplication, token revocation blacklists, and worker event queues (0.00% packet loss). |
 | **AI Reasoning Engine** | **LangGraph Multi-Agent Mesh** | Stateful graph orchestration: Triage Node (`<3s` latency), Hybrid RAG Node (Dense + BM25), and Investigation Node. |
 | **LLM Inference** | **Ollama / vLLM / Cloud APIs** | **Air-gapped local-first inference** via Ollama (Qwen 2.5 Coder, Llama 3.3) or BYOK cloud APIs (Claude 3.7 Sonnet, GPT-4o, Gemini 2.5 Flash). |
-| **Database & Vector Store** | **PostgreSQL 16 + `pgvector`** | Cryptographic incident checkpoints, execution logs, runbook embeddings, and audit trails. |
+| **Database & Audit Store** | **SQLite (Embedded Zero-Config Default)** | Embedded SQLite (`amber.db`) requiring **0 database installation or external setup**. Auto-creates schema on boot. Optional PostgreSQL for enterprise multi-container deployments. |
 | **Mobile HITL Mesh** | **Dedicated Python Bot Worker** | Singleton worker polling `@ambersre_alert_bot`, delivering 1-click inline mobile approvals (`approve:<id>` / `reject:<id>`). |
 | **WhatsApp Bridge** | **Node.js 20 + `@whiskeysockets/baileys`** | Self-hosted QR socket bridge (`:3001`) with zero third-party per-message SMS costs. |
 | **Slack Integration** | **Slack Block Kit + Deep Proof** | Rich interactive incident triage cards with diagnostic diffs and expandable proof modals. |
@@ -96,7 +96,7 @@ Amber is engineered as a resilient, single-tenant, in-VPC multi-container cluste
 
 ### Interactive Mobile Incident Channels:
 - **Telegram Bot (`@ambersre_alert_bot`):** Full inline button support (`✓ Approve (2.4s MTTR)` / `✗ Reject`). Interactive bot commands:
-  - `/status` — Real-time health check of API, PostgreSQL, and Redis buffer.
+  - `/status` — Real-time health check of API, database (SQLite/Postgres), and Redis buffer.
   - `/incidents` — View the 5 most recent production incidents and live statuses.
   - `/pending` — Inspect all high-risk mutations currently awaiting cryptographic approval.
   - `/approve <id>` — Cryptographically sign and execute an action.
@@ -117,7 +117,8 @@ Deploy the fully-functional Amber Community Edition in under 60 seconds on any L
 curl -fsSL https://ambersre.xyz/community.sh | bash
 ```
 
-> **No license key required.** Free forever for up to **50 Nodes, 15 Services, and 1,000 alerts/month**.
+> **No license key required.** Free forever for up to **50 Nodes, 15 Services, and 1,000 alerts/month**.  
+> **Zero database setup needed.** Operates on embedded SQLite (`amber.db`) out-of-the-box with auto-created schemas.
 
 ---
 

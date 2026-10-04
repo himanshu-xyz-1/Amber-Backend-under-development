@@ -56,7 +56,7 @@ fi
 info "Using Python runtime: $("$PYTHON_CMD" --version 2>&1)"
 
 if ! command -v docker &>/dev/null; then
-    warn "Docker is not installed or not in PATH. Docker is recommended for background Postgres & Redis."
+    info "Docker not found (optional). Amber runs locally on zero-config embedded SQLite."
 fi
 
 # ──────────────────────────────────────────────────────────────────────
