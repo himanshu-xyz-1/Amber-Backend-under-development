@@ -1,4 +1,3 @@
-import pytest
 from backend.app.core.sanitizer import (
     calculate_shannon_entropy,
     redact_string,

@@ -48,7 +48,6 @@ async def investigation_node(state: AmberGraphState) -> dict:
     severity = state.get("severity", "P2")
     service = state.get("affected_service", "core-service")
     matched_runbooks = state.get("matched_runbooks", [])
-    alert_payload = state.get("alert_payload", {})
 
     trust_level = get_model_trust_level()
     logger.info(f"[Investigation] Model trust level: {trust_level} | Severity: {severity} | Service: {service}")

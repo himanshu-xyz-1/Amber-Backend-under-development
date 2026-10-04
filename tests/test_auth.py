@@ -81,7 +81,6 @@ def test_webhook_secret_verification():
 @pytest.mark.asyncio
 async def test_incident_soft_delete_preserves_audit_trail():
     """Verify that deleting an incident soft-deletes it (status CANCELLED) to preserve SOC2 audit trail."""
-    import uuid
     from backend.app.core.database import AsyncSessionLocal, Base, engine
     from backend.app.models.incident import Incident, IncidentStatus, IncidentSeverity
     from sqlalchemy import select

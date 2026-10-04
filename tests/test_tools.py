@@ -1,7 +1,5 @@
 import pytest
 from backend.app.tools.base import tool_registry, RiskLevel
-from backend.app.tools.diagnostics import QueryDatabaseMetrics, CheckServiceHealth
-from backend.app.tools.remediation import KillDatabaseConnections, RollbackDeployment
 
 
 def test_tool_registry_registration():

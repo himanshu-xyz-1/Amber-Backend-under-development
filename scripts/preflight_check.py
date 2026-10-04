@@ -6,7 +6,6 @@ prior to starting or deploying Amber in production clusters.
 """
 
 import asyncio
-import os
 import sys
 from pathlib import Path
 

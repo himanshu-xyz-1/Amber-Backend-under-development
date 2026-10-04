@@ -323,7 +323,7 @@ async def k8s_rollback_deployment(
                 "template": target_rs.spec.template
             }
         }
-        res = apps_api.patch_namespaced_deployment(
+        apps_api.patch_namespaced_deployment(
             name=deployment_name,
             namespace=namespace,
             body=patch_body

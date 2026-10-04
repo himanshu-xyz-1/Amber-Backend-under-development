@@ -8,7 +8,6 @@ import base64
 import json
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization

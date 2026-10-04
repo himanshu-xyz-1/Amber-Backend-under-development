@@ -12,7 +12,6 @@ import time
 from typing import Tuple
 
 from backend.app.core.llm import llm_gateway
-from backend.app.core.config import settings
 from .state import AmberGraphState
 
 logger = logging.getLogger(__name__)

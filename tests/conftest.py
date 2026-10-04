@@ -25,11 +25,6 @@ def setup_test_database():
     """Ensures test database tables exist before test execution."""
     import asyncio
     from backend.app.core.database import engine, Base
-    import backend.app.models.user
-    import backend.app.models.incident
-    import backend.app.models.alert
-    import backend.app.models.tool_invocation
-    import backend.app.models.runbook
 
     async def _init():
         async with engine.begin() as conn:

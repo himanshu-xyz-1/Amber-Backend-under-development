@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import html
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 import uuid
 import httpx
 from sqlalchemy.future import select
@@ -19,7 +19,7 @@ from sqlalchemy.future import select
 from backend.app.core.config import settings
 from backend.app.core.database import AsyncSessionLocal
 from backend.app.core.license import license_manager
-from backend.app.models.incident import Incident, IncidentStatus, IncidentSeverity
+from backend.app.models.incident import Incident, IncidentStatus
 from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus
 from backend.app.services.approval_service import execute_tool_approval, ApprovalExecutionError
 
@@ -306,7 +306,7 @@ async def handle_reject_command(token: str, chat_id: int | str, text: str, user_
     inv_id = parts[1].strip()
     try:
         async with AsyncSessionLocal() as session:
-            inv = await execute_tool_approval(
+            await execute_tool_approval(
                 tool_invocation_id=inv_id,
                 action="reject",
                 db=session,

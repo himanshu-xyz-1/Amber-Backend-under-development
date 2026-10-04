@@ -6,7 +6,6 @@ Enables checking license status and dynamically activating Enterprise keys via W
 import os
 import re
 import logging
-from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/license", tags=["License"])
 
-DEFAULT_CONTACT_URL = "https://amber-frontend-xyz.pages.dev/#contact"
+DEFAULT_CONTACT_URL = "https://ambersre.xyz/#connect"
 
 
 class LicenseActivateRequest(BaseModel):

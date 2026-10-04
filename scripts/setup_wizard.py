@@ -9,12 +9,10 @@ cloud provider fallbacks, and real-time on-call channel pairing (Telegram, Slack
 import os
 import sys
 import re
-import json
-import time
 import socket
 import asyncio
 import subprocess
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any
 
 # Add backend directory to sys.path
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -201,7 +199,6 @@ def run_interactive_setup():
         license_tier = "COMMUNITY"
         max_nodes = 50
         max_services = 15
-        monthly_alert_limit = 1000
         license_key_to_save = ""
 
         print(f"\n  ✔ {GREEN}COMMUNITY EDITION ACTIVATED (Free Forever){NC}")
@@ -441,11 +438,6 @@ def run_interactive_setup():
     # Database setup / migrations check
     try:
         from backend.app.core.database import Base, engine
-        import backend.app.models.user
-        import backend.app.models.incident
-        import backend.app.models.alert
-        import backend.app.models.tool_invocation
-        import backend.app.models.runbook
 
         async def _init_db():
             async with engine.begin() as conn:

@@ -6,7 +6,6 @@ into PostgreSQL for hybrid keyword and vector RAG retrieval.
 """
 
 import asyncio
-import os
 import sys
 from pathlib import Path
 

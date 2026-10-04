@@ -20,11 +20,9 @@ Safety guarantees:
 - 1 auto-retry on malformed JSON with explicit error feedback to model.
 """
 
-import asyncio
 import json
 import logging
 import re
-import time
 from typing import Any, Dict, Optional
 
 import httpx

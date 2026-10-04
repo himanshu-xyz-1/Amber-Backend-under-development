@@ -50,7 +50,6 @@ async def rag_node(state: AmberGraphState) -> dict:
     Searches PostgreSQL runbooks table combined with canonical SRE runbook index
     to extract actionable remediation instructions.
     """
-    severity = state.get("severity", "P2")
     service = state.get("affected_service", "core-service")
     alert_payload = state.get("alert_payload", {})
     alert_text = f"{alert_payload.get('title', '')} {alert_payload.get('message', '')} {service}".lower()

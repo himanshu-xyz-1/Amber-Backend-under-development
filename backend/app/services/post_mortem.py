@@ -6,7 +6,7 @@ Google SRE / Netflix SRE Markdown format.
 
 from datetime import datetime, timezone
 import json
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from backend.app.models.incident import Incident
 from backend.app.models.alert import Alert

@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 from backend.app.integrations.slack import send_slack_incident_alert
 from backend.app.integrations.telegram import send_telegram_incident_alert

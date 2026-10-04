@@ -10,7 +10,7 @@ import logging
 from typing import Optional
 import uuid
 
-from fastapi import Depends, HTTPException, Header, Query, Request, Security, status
+from fastapi import HTTPException, Header, Query, Request, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
@@ -151,17 +151,6 @@ async def require_api_key(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid API Key or Bearer token.",
         headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    # 2. If AMBER_API_KEY is not explicitly set in config
-    if settings.ENVIRONMENT in ("development", "test"):
-        approver = x_approver_email or "dev-local-sre"
-        return AuthenticatedUser(identity=approver, role="admin", auth_method="dev_local")
-
-    # In production, require AMBER_API_KEY to be configured
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Server security configuration error: AMBER_API_KEY must be configured in production.",
     )
 
 

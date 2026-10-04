@@ -5,7 +5,7 @@ Coordinates concurrent broadcast of on-call incident notifications across Slack,
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from .slack import send_slack_incident_alert
 from .telegram import send_telegram_incident_alert

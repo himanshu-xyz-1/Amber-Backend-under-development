@@ -195,7 +195,6 @@ class TestAirGappedMode:
             mock_settings.LOCAL_LLM_CONTEXT_LENGTH = 16384
 
             from backend.app.core.llm import LLMGateway
-            import httpx
 
             gw = LLMGateway()
             with patch("httpx.AsyncClient") as mock_client_cls:
@@ -282,8 +281,6 @@ class TestAutoRollbackLoopPrevention:
         mock_tool_result.data = {"error": "K8s API timeout"}
         mock_tool_result.error = "K8s API timeout"
         mock_tool.execute = AsyncMock(return_value=mock_tool_result)
-
-        rollback_tool_mock = AsyncMock()
 
         with patch("backend.app.services.approval_service.tool_registry") as mock_registry, \
              patch("backend.app.services.approval_service.settings") as mock_settings:
@@ -380,7 +377,7 @@ class TestWebhookFailClosed:
     async def test_missing_secret_production_rejects(self):
         """In production, missing WEBHOOK_SECRET must reject requests (fail-closed)."""
         from fastapi import HTTPException
-        from unittest.mock import AsyncMock, MagicMock, patch
+        from unittest.mock import MagicMock, patch
 
         with patch("backend.app.auth.security.settings") as mock_settings:
             mock_settings.WEBHOOK_SECRET = None

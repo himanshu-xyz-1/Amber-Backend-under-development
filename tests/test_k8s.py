@@ -1,14 +1,11 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from kubernetes.client.rest import ApiException
 
 from backend.app.core.k8s import (
     k8s_restart_pod,
     k8s_rollout_restart_deployment,
     k8s_rollback_deployment,
     k8s_check_deployment_health,
-    k8s_fetch_pod_logs,
-    K8sExecutionError,
 )
 from backend.app.tools.base import tool_registry
 

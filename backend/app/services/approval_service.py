@@ -6,9 +6,8 @@ across Web Dashboard, Telegram Bot, and Slack integrations.
 
 from datetime import datetime, timezone
 import inspect
-import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Optional
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession

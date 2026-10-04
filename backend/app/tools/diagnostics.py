@@ -1,12 +1,12 @@
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import httpx
 from sqlalchemy import text
 from backend.app.core.database import AsyncSessionLocal
 from backend.app.core.k8s import k8s_fetch_pod_logs, K8sExecutionError
-from backend.app.core.sanitizer import redact_string, sanitize_payload
+from backend.app.core.sanitizer import redact_string
 from backend.app.tools.base import BaseTool, RiskLevel, ToolResult, tool_registry
 
 logger = logging.getLogger(__name__)

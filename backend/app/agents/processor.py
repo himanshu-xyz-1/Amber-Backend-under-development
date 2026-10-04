@@ -1,9 +1,8 @@
-import asyncio
 import hashlib
 import json
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 import uuid
 
 from sqlalchemy import select
