@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from typing import Dict, Any
 
 from backend.app.auth.security import require_api_key
 from backend.app.core.kill_switch import kill_switch
 from backend.app.core.database import AsyncSessionLocal
-from sqlalchemy import select, update
+from sqlalchemy import update
 from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus
 from datetime import datetime, timezone
 import logging
