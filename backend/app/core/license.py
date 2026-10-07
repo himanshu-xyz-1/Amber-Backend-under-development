@@ -30,14 +30,25 @@ class LicenseManager:
     """
 
     def __init__(self, token: Optional[str] = None):
+        import os
         self._raw_token = token
         self._public_key = serialization.load_pem_public_key(AMBER_MASTER_PUBLIC_KEY_PEM)
         self.is_valid: bool = False
-        self.status: str = "community"  # "active", "expired", "invalid", "community"
-        self.org: str = "Community Edition"
-        self.tier: str = "community"
-        self.max_nodes: int = 15
-        self.max_services: int = 5
+        
+        self.is_enterprise_mode = os.environ.get("AMBER_EDITION", "community").lower() == "enterprise"
+        
+        if self.is_enterprise_mode:
+            self.status: str = "invalid"
+            self.org: str = "Unlicensed Enterprise"
+            self.tier: str = "none"
+            self.max_nodes: int = 0
+            self.max_services: int = 0
+        else:
+            self.status: str = "community"
+            self.org: str = "Community Edition"
+            self.tier: str = "community"
+            self.max_nodes: int = 15
+            self.max_services: int = 5
         self.features: List[str] = [
             "triage", 
             "read_only", 
