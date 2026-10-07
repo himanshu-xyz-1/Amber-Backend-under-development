@@ -42,6 +42,14 @@ case "$CMD" in
             exit 1
         fi
         ;;
+    issue-key|generate-key)
+        shift || true
+        if [ -f ".venv/bin/python" ]; then
+            .venv/bin/python scripts/generate_license.py "$@"
+        else
+            python3 scripts/generate_license.py "$@"
+        fi
+        ;;
     status)
         echo -e "${CYAN}Checking Amber SRE Engine Status...${NC}"
         if [ -f ".venv/bin/python" ]; then
