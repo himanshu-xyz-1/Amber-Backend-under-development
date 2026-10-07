@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-amber}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD must be configured in .env}
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-amber_secure_password}"
       POSTGRES_DB: ${POSTGRES_DB:-amber_db}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -117,7 +117,7 @@ services:
       ollama:
         condition: service_started
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-amber}:${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD is required in .env}@postgres:5432/${POSTGRES_DB:-amber_db}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-amber}:${POSTGRES_PASSWORD:-amber_secure_password}@postgres:5432/${POSTGRES_DB:-amber_db}
       - REDIS_URL=redis://redis:6379/0
       - REDIS_ENABLED=true
       - WHATSAPP_BRIDGE_URL=http://whatsapp-bridge:3001
@@ -155,7 +155,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-amber}:${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD is required in .env}@postgres:5432/${POSTGRES_DB:-amber_db}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-amber}:${POSTGRES_PASSWORD:-amber_secure_password}@postgres:5432/${POSTGRES_DB:-amber_db}
       - REDIS_URL=redis://redis:6379/0
       - REDIS_ENABLED=true
       - ENVIRONMENT=production
