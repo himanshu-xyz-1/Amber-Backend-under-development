@@ -24,17 +24,17 @@ DEFAULT_KEY_PATH = Path(
 
 TIER_CONFIG = {
     "community": {
-        "max_nodes": 50,
-        "max_services": 15,
+        "max_nodes": 15,
+        "max_services": 5,
         "features": ["triage", "root_cause_analysis", "post_mortem", "read_only"]
     },
     "observe": {
-        "max_nodes": 50,
-        "max_services": 15,
+        "max_nodes": 15,
+        "max_services": 5,
         "features": ["triage", "root_cause_analysis", "post_mortem", "read_only"]
     },
     "autonomous": {
-        "max_nodes": 200,
+        "max_nodes": 100,
         "max_services": 35,
         "features": [
             "triage",
@@ -48,8 +48,8 @@ TIER_CONFIG = {
         ]
     },
     "response": {
-        "max_nodes": 1000,
-        "max_services": 100,
+        "max_nodes": 500,
+        "max_services": 9999,
         "features": [
             "triage",
             "root_cause_analysis",
