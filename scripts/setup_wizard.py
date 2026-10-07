@@ -30,7 +30,7 @@ NC = "\033[0m"
 
 def print_banner(is_community: bool = False):
     edition_title = f"{GREEN}{BOLD}[ Amber SRE — Free Community Edition Setup Wizard ]{NC}" if is_community else f"{BOLD}[ Amber Autonomous SRE Engine — Production Setup Wizard v1.2 ]{NC}"
-    edition_sub = f"{DIM}100% Self-Hosted • 5 Nodes • 3 Services • Local Ollama Compute • Zero License Key{NC}" if is_community else f"{DIM}Deterministic Incident Investigation, Root-Cause Proof & On-Call Automation{NC}"
+    edition_sub = f"{DIM}100% Self-Hosted • 15 Nodes • 5 Services • Local Ollama Compute • Zero License Key{NC}" if is_community else f"{DIM}Deterministic Incident Investigation, Root-Cause Proof & On-Call Automation{NC}"
     banner = f"""
 {CYAN}{BOLD}  █████╗ ███╗   ███╗██████╗ ███████╗██████╗ 
  ██╔══██╗████╗ ████║██╔══██╗██╔════╝██╔══██╗
@@ -197,13 +197,13 @@ def run_interactive_setup():
         company_name = input("  Enter your Company / Team: ").strip() or "Engineering Team"
 
         license_tier = "COMMUNITY"
-        max_nodes = 50
-        max_services = 15
+        max_nodes = 15
+        max_services = 5
         license_key_to_save = ""
 
         print(f"\n  ✔ {GREEN}COMMUNITY EDITION ACTIVATED (Free Forever){NC}")
         print(f"    • License: Zero Key Required ($0 Free Forever)")
-        print(f"    • Node Capacity: Up to 50 Cloud / K8s Nodes")
+        print(f"    • Node Capacity: Up to 15 Cloud / K8s Nodes")
         print(f"    • Service Capacity: Up to 15 Production Microservices")
         print(f"    • Monthly Alerts: 1,000 alerts / month")
         print(f"    • Features Included: Alert Storm Deduplication, Deterministic Root Cause,")
@@ -219,8 +219,8 @@ def run_interactive_setup():
         license_input = input(f"  {BOLD}License Key: ").strip()
 
         license_tier = "COMMUNITY"
-        max_nodes = 5
-        max_services = 3
+        max_nodes = 15
+        max_services = 5
         license_key_to_save = ""
 
         from backend.app.core.license import LicenseManager

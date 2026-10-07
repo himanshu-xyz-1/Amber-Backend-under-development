@@ -36,8 +36,8 @@ class LicenseManager:
         self.status: str = "community"  # "active", "expired", "invalid", "community"
         self.org: str = "Community Edition"
         self.tier: str = "community"
-        self.max_nodes: int = 50
-        self.max_services: int = 15
+        self.max_nodes: int = 15
+        self.max_services: int = 5
         self.features: List[str] = [
             "triage", 
             "read_only", 

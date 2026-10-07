@@ -28,8 +28,8 @@ To guarantee deterministic system latency (<100ms webhook ingestion, <3s triage)
 ├─────────────────────┬──────────────────────────┬───────────────────────────────────────┤
 │ TIER / COMMITMENT   │ PRICING (USD)            │ INFRASTRUCTURE & EXECUTION LIMITS     │
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
-│ COMMUNITY TIER      │ • $0 / Month             │ • Up to 15 Production Microservices   │
-│ (Self-Hosted,       │ • Free Forever           │ • Up to 50 Kubernetes / Cloud Nodes   │
+│ COMMUNITY TIER      │ • $0 / Month             │ • Up to 5 Production Microservices   │
+│ (Self-Hosted,       │ • Free Forever           │ • Up to 15 Kubernetes / Cloud Nodes   │
 │  Air-Gapped SRE)    │   Zero License Key Req   │ • 1,000 alerts / month                │
 │                     │                          │ • Alert Storm Deduplication (< 80ms)  │
 │                     │                          │ • Deterministic RCA Proof Blocks      │
@@ -37,14 +37,14 @@ To guarantee deterministic system latency (<100ms webhook ingestion, <3s triage)
 │                     │                          │ • 50+ Built-in Runbooks & Local Ollama│
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
 │ LEVEL 1: AUTONOMOUS │ • Monthly: $2,499/mo     │ • Up to 35 Production Microservices   │
-│ (Automated Fixes)   │ • Annual: $2,099/mo      │ • Up to 200 Kubernetes / Cloud Nodes  │
+│ (Automated Fixes)   │ • Annual: $2,099/mo      │ • Up to 100 Kubernetes / Cloud Nodes  │
 │                     │   (Billed $25,188/yr)    │ • Unlimited Alert Ingestion           │
 │                     │                          │ • 100 Included Mutating Actions / mo  │
 │                     │                          │ • Multi-Channel HITL (Slack/TG/WA)    │
 │                     │                          │ • Offline Ed25519 License Validation  │
 ├─────────────────────┼──────────────────────────┼───────────────────────────────────────┤
 │ LEVEL 2: RESPONSE   │ • Monthly: $4,499/mo     │ • Custom / Unlimited Microservices    │
-│ (Enterprise Response│ • Annual: $3,699/mo      │ • Dedicated Single-Tenant VPC Cluster │
+│ (Enterprise Response│ • Annual: $3,699/mo      │ • Up to 500 Kubernetes / Cloud Nodes │
 │  & SRE Escalation)  │   (Billed $44,388/yr)    │ • 500 High-Volume Remediations / mo   │
 │                     │                          │ • < 15-min Incident Bridge Escalation │
 │                     │                          │ • Full White-Glove Runbook Eng        │
