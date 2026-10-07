@@ -25,7 +25,7 @@ DEFAULT_KEY_PATH = Path(
 TIER_CONFIG = {
     "community": {
         "max_nodes": 15,
-        "max_services": 5,
+        "max_services": 20,
         "features": ["triage", "root_cause_analysis", "post_mortem", "read_only"]
     },
     "observe": {
