@@ -54,6 +54,13 @@ case "$CMD" in
         else
             echo -e "${YELLOW}ℹ Local API Gateway: Offline or starting up${NC}"
         fi
+        echo ""
+        echo -e "${CYAN}📡 Ingestion Webhook Endpoints:${NC}"
+        echo -e "  • Prometheus: http://localhost:8000/api/v1/webhooks/prometheus"
+        echo -e "  • Datadog:    http://localhost:8000/api/v1/webhooks/datadog"
+        echo -e "  • Grafana:    http://localhost:8000/api/v1/webhooks/grafana"
+        echo -e "  • PagerDuty:  http://localhost:8000/api/v1/webhooks/pagerduty"
+        echo -e "  • Generic:    http://localhost:8000/api/v1/webhooks/generic"
         ;;
     start)
         echo -e "${GREEN}Starting Amber SRE containers...${NC}"

@@ -57,7 +57,27 @@ def main():
     if slack_webhook:
         set_key(str(env_path), "SLACK_WEBHOOK_URL", slack_webhook)
     
+    # Webhook intake secret
+    from dotenv import get_key
+    webhook_secret = get_key(str(env_path), "WEBHOOK_SECRET")
+    if not webhook_secret:
+        webhook_secret = secrets.token_hex(16)
+        set_key(str(env_path), "WEBHOOK_SECRET", webhook_secret)
+
     print(f"\n{GREEN}✔ Enterprise configuration saved to .env{NC}")
+
+    print(f"\n{CYAN}{BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{NC}")
+    print(f"{CYAN}{BOLD}📡 AMBER WEBHOOK INTAKE ENDPOINTS (Add to your Monitoring Tools):{NC}")
+    print(f"{CYAN}{BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{NC}")
+    print(f"  • {BOLD}Prometheus Alertmanager:{NC} http://localhost:8000/api/v1/webhooks/prometheus")
+    print(f"  • {BOLD}Datadog Webhook:{NC}         http://localhost:8000/api/v1/webhooks/datadog")
+    print(f"  • {BOLD}Grafana Contact Point:{NC}   http://localhost:8000/api/v1/webhooks/grafana")
+    print(f"  • {BOLD}PagerDuty / Sentry:{NC}      http://localhost:8000/api/v1/webhooks/pagerduty")
+    print(f"  • {BOLD}Generic Webhook:{NC}         http://localhost:8000/api/v1/webhooks/generic")
+    print(f"\n  {YELLOW}Header (Required for webhook authentication in production):{NC}")
+    print(f"  X-Webhook-Secret: {webhook_secret}")
+    print(f"{CYAN}{BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{NC}\n")
+
     print(f"Next step: Run {BOLD}./amber start{NC} to boot the cluster.\n")
 
 if __name__ == "__main__":
