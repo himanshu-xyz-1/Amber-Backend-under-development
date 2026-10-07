@@ -137,8 +137,15 @@ async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payl
                     # For LOW risk read-only tools, execute immediately in autonomous mode
                     exec_result = None
                     health_passed = None
-                    exec_status = InvocationStatus.PENDING_APPROVAL if risk_level == RiskLevel.HIGH else InvocationStatus.EXECUTED
+                    exec_error = None
                     
+                    from backend.app.core.kill_switch import kill_switch
+                    if risk_level == RiskLevel.HIGH and kill_switch.is_engaged:
+                        exec_status = InvocationStatus.REJECTED
+                        exec_error = "REJECTED_BY_KILL_SWITCH: System is in Read-Only Observation Mode."
+                    else:
+                        exec_status = InvocationStatus.PENDING_APPROVAL if risk_level == RiskLevel.HIGH else InvocationStatus.EXECUTED
+                        
                     if risk_level == RiskLevel.LOW:
                         reg_tool = tool_registry.get(tool_name)
                         if reg_tool:
@@ -164,11 +171,11 @@ async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payl
                         reversible=tool.get("reversible", False),
                         status=exec_status,
                         payload_sha256=payload_sha256,
-                        approval_expires_at=approval_expires if risk_level == RiskLevel.HIGH else None,
+                        approval_expires_at=approval_expires if risk_level == RiskLevel.HIGH and exec_status == InvocationStatus.PENDING_APPROVAL else None,
                         execution_result=exec_result,
                         error_message=exec_error,
                         health_check_passed=health_passed,
-                        executed_at=datetime.now(timezone.utc) if risk_level == RiskLevel.LOW else None,
+                        executed_at=datetime.now(timezone.utc) if (risk_level == RiskLevel.LOW or exec_status == InvocationStatus.REJECTED) else None,
                         created_at=start_time
                     )
                     session.add(tool_inv)

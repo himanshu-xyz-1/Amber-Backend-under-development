@@ -467,7 +467,7 @@ def run_interactive_setup():
   {BOLD}Dashboard:{NC}        http://localhost:8000
   {BOLD}API Docs:{NC}         http://localhost:8000/docs
   {BOLD}License Tier:{NC}     {license_tier} (Max {max_nodes} Nodes · {max_services} Services)
-  {BOLD}Alert Quota:{NC}      {'100 Alerts/month (Free Forever)' if is_community else 'Commercial Enterprise Quota'}
+  {BOLD}Alert Quota:{NC}      {'1,000 Alerts/month (Free Forever)' if is_community else 'Commercial Enterprise Quota'}
   {BOLD}Execution Mode:{NC}   {'Read-Only Triage (Autonomous auto-fix requires Commercial tier)' if is_community else 'Autonomous Low-Risk Remediation'}
   {BOLD}Active Brain:{NC}     {selected_local_model if not skip_local_model else 'Heuristics'}
   {BOLD}On-Call Alerts:{NC}   {", ".join(active_notifications)}

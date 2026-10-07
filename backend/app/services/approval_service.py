@@ -17,6 +17,7 @@ from backend.app.core.config import settings
 from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus, RiskLevel
 from backend.app.models.incident import Incident, IncidentStatus
 from backend.app.tools.base import tool_registry
+from backend.app.core.kill_switch import kill_switch
 
 
 logger = logging.getLogger(__name__)
@@ -98,6 +99,14 @@ async def execute_tool_approval(
 
     # 3. Action handling
     if action == "approve":
+        # Check Emergency Kill Switch
+        if kill_switch.is_engaged:
+            invocation.status = InvocationStatus.REJECTED
+            invocation.error_message = "REJECTED_BY_KILL_SWITCH: System is in Read-Only Observation Mode."
+            invocation.executed_at = now_utc
+            await db.commit()
+            raise ApprovalExecutionError("Action rejected: System kill switch is engaged.", status_code=403)
+
         invocation.status = InvocationStatus.APPROVED
         invocation.approved_by_id = approved_by_id
         invocation.approved_at = now_utc

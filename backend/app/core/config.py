@@ -20,8 +20,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "https://ambersre.xyz",
-        "https://www.ambersre.xyz",
-        "https://amber-frontend.pages.dev"
+        "https://www.ambersre.xyz"
     ]
     # Development: SQLite (aiosqlite) | Production: PostgreSQL (asyncpg) + pgvector
     DATABASE_URL: str = "sqlite+aiosqlite:///./amber.db"
