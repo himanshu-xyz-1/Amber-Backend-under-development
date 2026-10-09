@@ -77,3 +77,85 @@ async def test_execute_tool_approval_lifecycle():
         assert approved.status == InvocationStatus.EXECUTED
         assert approved.health_check_passed is True
         assert approved.execution_result is not None
+
+
+def test_audit_api_json_and_text_export():
+    from fastapi.testclient import TestClient
+    from backend.app.main import app
+    from backend.app.core.config import settings
+
+    client = TestClient(app)
+    headers = {"X-API-Key": settings.AMBER_API_KEY}
+
+    # 1. JSON audit fetch
+    res_json = client.get("/api/v1/approvals/audit?limit=5&format=json", headers=headers)
+    assert res_json.status_code == 200
+    data = res_json.json()
+    assert "audit_trail" in data
+    assert "total" in data
+    assert data["limit"] == 5
+    assert isinstance(data["audit_trail"], list)
+
+    # 2. Text audit fetch
+    res_text = client.get("/api/v1/approvals/audit?limit=5&format=text", headers=headers)
+    assert res_text.status_code == 200
+    assert "AMBER SRE AUDIT LOG TRAIL" in res_text.text
+
+    # 3. File download test
+    res_dl = client.get("/api/v1/approvals/audit?limit=5&format=json&download=true", headers=headers)
+    assert res_dl.status_code == 200
+    assert "attachment; filename=" in res_dl.headers.get("content-disposition", "")
+
+
+@pytest.mark.asyncio
+async def test_telegram_audit_command_and_document_download(monkeypatch):
+    from backend.app.integrations.telegram_bot import handle_audit_command, handle_telegram_callback
+
+    sent_messages = []
+    sent_documents = []
+
+    async def mock_send_reply(token, chat_id, text, reply_markup=None):
+        sent_messages.append({"chat_id": chat_id, "text": text, "reply_markup": reply_markup})
+        return {"ok": True}
+
+    async def mock_send_doc(token, chat_id, filename, content, caption=None):
+        sent_documents.append({"chat_id": chat_id, "filename": filename, "content": content, "caption": caption})
+        return {"ok": True}
+
+    async def mock_answer_cb(token, cb_id, text=None):
+        return {"ok": True}
+
+    monkeypatch.setattr("backend.app.integrations.telegram_bot._is_authorized_admin", lambda cid: True)
+    monkeypatch.setattr("backend.app.integrations.telegram_bot.send_telegram_reply", mock_send_reply)
+    monkeypatch.setattr("backend.app.integrations.telegram_bot.send_telegram_document", mock_send_doc)
+    monkeypatch.setattr("backend.app.integrations.telegram_bot.answer_callback_query", mock_answer_cb)
+
+    # Test /audit 15 command
+    await handle_audit_command("mock_token", 12345678, "/audit 15")
+    assert len(sent_messages) == 1
+    assert "AMBER AUDIT TRAIL" in sent_messages[0]["text"]
+    assert sent_messages[0]["reply_markup"] is not None
+
+    # Test callback for JSON download
+    cb_json = {
+        "id": "cb_001",
+        "data": "audit_dl:json:15",
+        "message": {"chat": {"id": 12345678}},
+        "from": {"id": 12345678, "username": "admin_sre"}
+    }
+    await handle_telegram_callback(cb_json, "mock_token")
+    assert len(sent_documents) == 1
+    assert sent_documents[0]["filename"].endswith(".json")
+
+    # Test callback for Text log download
+    cb_text = {
+        "id": "cb_002",
+        "data": "audit_dl:text:15",
+        "message": {"chat": {"id": 12345678}},
+        "from": {"id": 12345678, "username": "admin_sre"}
+    }
+    await handle_telegram_callback(cb_text, "mock_token")
+    assert len(sent_documents) == 2
+    assert sent_documents[1]["filename"].endswith(".log")
+
+

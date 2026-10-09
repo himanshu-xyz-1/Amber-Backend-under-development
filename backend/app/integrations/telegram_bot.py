@@ -78,6 +78,29 @@ async def edit_telegram_message(token: str, chat_id: int | str, message_id: int,
         logger.warning(f"Failed to edit Telegram message: {e}")
 
 
+async def send_telegram_document(
+    token: str,
+    chat_id: int | str,
+    filename: str,
+    content: bytes,
+    caption: Optional[str] = None
+):
+    """Sends a downloadable file/document directly into Telegram chat."""
+    api_url = f"https://api.telegram.org/bot{token}/sendDocument"
+    data = {"chat_id": str(chat_id)}
+    if caption:
+        data["caption"] = caption
+        data["parse_mode"] = "HTML"
+    files = {"document": (filename, content)}
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(api_url, data=data, files=files)
+            if resp.status_code != 200:
+                logger.warning(f"Telegram sendDocument failed: {resp.status_code} - {resp.text}")
+    except Exception as e:
+        logger.warning(f"Failed to send Telegram document: {e}")
+
+
 async def handle_status_command(token: str, chat_id: int | str):
     """Queries and returns real-time system and cluster telemetry."""
     # Check DB
@@ -218,6 +241,84 @@ async def handle_pending_command(token: str, chat_id: int | str):
     except Exception as e:
         logger.exception("Error listing pending approvals:")
         await send_telegram_reply(token, chat_id, f"❌ Failed to fetch pending approvals: {html.escape(str(e))}")
+
+
+async def handle_audit_command(token: str, chat_id: int | str, text: str):
+    """
+    Handles `/audit` or `/audit <count>` to display historical approvals with download options.
+    Defaults to last 10 entries; user can specify any number (e.g., `/audit 30`).
+    """
+    parts = text.strip().split()
+    limit = 10
+    if len(parts) > 1:
+        try:
+            limit = max(1, min(100, int(parts[1])))
+        except ValueError:
+            limit = 10
+
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(ToolInvocation)
+                .order_by(ToolInvocation.created_at.desc())
+                .limit(limit)
+            )
+            invocations = result.scalars().all()
+
+        if not invocations:
+            await send_telegram_reply(
+                token, chat_id,
+                "📋 <b>Amber Audit Trail</b>\nNo tool executions or approvals recorded in database yet."
+            )
+            return
+
+        lines = [
+            f"📋 <b>AMBER AUDIT TRAIL — LAST {len(invocations)} APPROVALS</b>",
+            "══════════════════════════════════════"
+        ]
+
+        for idx, inv in enumerate(invocations, 1):
+            status_val = inv.status.value if hasattr(inv.status, "value") else str(inv.status)
+            if status_val == "EXECUTED":
+                icon = "✅"
+            elif status_val == "REJECTED":
+                icon = "❌"
+            elif status_val == "FAILED":
+                icon = "⚠️"
+            else:
+                icon = "⏳"
+
+            time_str = inv.created_at.strftime("%d %b %H:%M:%S UTC") if inv.created_at else "N/A"
+            approver = html.escape(str(inv.approved_by_id or "Authorized SRE"))
+            tool = html.escape(inv.tool_name)
+            args_str = html.escape(str(inv.tool_args or {})[:40])
+            health = "✅ PASSED" if inv.health_check_passed else ("❌ FAILED" if inv.health_check_passed is False else "N/A")
+
+            lines.append(
+                f"<b>{idx}. {icon} {tool}</b>\n"
+                f"   • <b>Time:</b> {time_str}\n"
+                f"   • <b>Approver:</b> {approver}\n"
+                f"   • <b>Status:</b> <code>{status_val}</code> | Health: {health}\n"
+                f"   • <b>Args:</b> <code>{args_str}</code>"
+            )
+
+        lines.append("══════════════════════════════════════")
+        lines.append(f"<i>Showing {len(invocations)} of requested {limit}. Tap below to download:</i>")
+
+        reply_text = "\n".join(lines)
+        keyboard = {
+            "inline_keyboard": [
+                [
+                    {"text": "📥 Download as JSON", "callback_data": f"audit_dl:json:{limit}"},
+                    {"text": "📥 Download Logs (Text)", "callback_data": f"audit_dl:text:{limit}"},
+                ]
+            ]
+        }
+        await send_telegram_reply(token, chat_id, reply_text, reply_markup=keyboard)
+
+    except Exception as e:
+        logger.exception("Error handling audit command:")
+        await send_telegram_reply(token, chat_id, f"❌ Failed to fetch audit trail: {html.escape(str(e))}")
 
 
 def _is_authorized_admin(chat_id: int | str) -> bool:
@@ -450,6 +551,75 @@ async def handle_telegram_callback(cb: Dict[str, Any], token: str):
             logger.exception("Error rejecting tool invocation:")
             await send_telegram_reply(token, chat_id, f"❌ Rejection error: {html.escape(str(e))}")
 
+    elif data.startswith("audit_dl:"):
+        parts = data.split(":")
+        fmt = parts[1] if len(parts) > 1 else "json"
+        limit = int(parts[2]) if len(parts) > 2 else 10
+        await answer_callback_query(token, cb_id, "📥 Preparing audit trail export...")
+
+        try:
+            async with AsyncSessionLocal() as session:
+                res = await session.execute(
+                    select(ToolInvocation)
+                    .order_by(ToolInvocation.created_at.desc())
+                    .limit(limit)
+                )
+                invocations = res.scalars().all()
+
+            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+            if fmt == "json":
+                export_data = [
+                    {
+                        "invocation_id": str(inv.id),
+                        "tool_name": inv.tool_name,
+                        "tool_args": inv.tool_args,
+                        "risk_level": inv.risk_level.value if hasattr(inv.risk_level, "value") else str(inv.risk_level),
+                        "status": inv.status.value if hasattr(inv.status, "value") else str(inv.status),
+                        "approved_by_id": str(inv.approved_by_id) if inv.approved_by_id else None,
+                        "created_at": inv.created_at.isoformat() if inv.created_at else None,
+                        "approved_at": inv.approved_at.isoformat() if inv.approved_at else None,
+                        "executed_at": inv.executed_at.isoformat() if inv.executed_at else None,
+                        "health_check_passed": inv.health_check_passed,
+                        "payload_sha256": inv.payload_sha256,
+                        "execution_result": inv.execution_result,
+                        "error_message": inv.error_message,
+                    }
+                    for inv in invocations
+                ]
+                content = json.dumps({
+                    "audit_count": len(export_data),
+                    "requested_limit": limit,
+                    "exported_at": datetime.now(timezone.utc).isoformat(),
+                    "audit_records": export_data
+                }, indent=2).encode("utf-8")
+                filename = f"amber_audit_trail_{timestamp}.json"
+                caption = f"📄 <b>Amber Audit Trail Export (JSON)</b>\nContains latest {len(export_data)} remediation approvals."
+            else:
+                lines = [
+                    f"# AMBER SRE AUDIT TRAIL LOG — {len(invocations)} ENTRIES",
+                    f"# Exported at: {datetime.now(timezone.utc).isoformat()}",
+                    "# " + "=" * 70,
+                    ""
+                ]
+                for idx, inv in enumerate(invocations, 1):
+                    health = "PASSED" if inv.health_check_passed else ("FAILED" if inv.health_check_passed is False else "N/A")
+                    lines.append(f"[{idx}] {inv.created_at or 'UNKNOWN'} | Tool: {inv.tool_name} | Status: {inv.status.value}")
+                    lines.append(f"    Approver: {inv.approved_by_id or 'Authorized SRE'} | SHA256: {inv.payload_sha256 or 'N/A'}")
+                    lines.append(f"    Health: {health} | Args: {json.dumps(inv.tool_args or {})}")
+                    if inv.error_message:
+                        lines.append(f"    Error: {inv.error_message}")
+                    lines.append("")
+                content = "\n".join(lines).encode("utf-8")
+                filename = f"amber_audit_trail_{timestamp}.log"
+                caption = f"📄 <b>Amber Audit Trail Log (Text)</b>\nContains latest {len(invocations)} remediation approvals."
+
+            await send_telegram_document(token, chat_id, filename, content, caption=caption)
+
+        except Exception as e:
+            logger.exception("Error exporting audit document:")
+            await send_telegram_reply(token, chat_id, f"❌ Failed to generate audit document: {html.escape(str(e))}")
+
 
 async def handle_telegram_message(msg: Dict[str, Any], token: str):
     """Routes incoming Telegram text messages to command handlers."""
@@ -473,6 +643,7 @@ async def handle_telegram_message(msg: Dict[str, Any], token: str):
             "• /status — Cluster health, DB/Redis latency, active incidents\n"
             "• /incidents — View latest active incidents & severity\n"
             "• /pending — View remediations waiting for 1-Click approval\n"
+            "• /audit [count] — View audit trail & download logs/JSON (e.g., /audit 10, /audit 30)\n"
             "• <code>/approve &lt;id&gt;</code> — Approve & execute remediation\n"
             "• <code>/reject &lt;id&gt;</code> — Reject proposed remediation\n"
             "• /simulate — Ingest test P1 incident through pipeline\n"
@@ -488,6 +659,9 @@ async def handle_telegram_message(msg: Dict[str, Any], token: str):
 
     elif cmd == "/pending":
         await handle_pending_command(token, chat_id)
+
+    elif cmd.startswith("/audit"):
+        await handle_audit_command(token, chat_id, text)
 
     elif cmd.startswith("/approve"):
         await handle_approve_command(token, chat_id, text, from_user)

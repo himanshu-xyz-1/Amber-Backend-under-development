@@ -56,3 +56,79 @@ async def list_pending_approvals(
         .order_by(ToolInvocation.created_at.desc())
     )
     return result.scalars().all()
+
+
+@router.get("/audit")
+async def get_audit_trail(
+    limit: int = 10,
+    format: str = "json",
+    download: bool = False,
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(require_api_key),
+):
+    """
+    Retrieves the historical HITL remediation audit trail.
+    Supports JSON and formatted text log outputs with optional attachment download.
+    """
+    import json
+    from datetime import datetime, timezone
+    from fastapi.responses import Response
+
+    safe_limit = max(1, min(100, limit))
+    result = await db.execute(
+        select(ToolInvocation)
+        .order_by(ToolInvocation.created_at.desc())
+        .limit(safe_limit)
+    )
+    invocations = result.scalars().all()
+
+    records = [
+        {
+            "invocation_id": str(inv.id),
+            "tool_name": inv.tool_name,
+            "tool_args": inv.tool_args,
+            "risk_level": inv.risk_level.value if hasattr(inv.risk_level, "value") else str(inv.risk_level),
+            "status": inv.status.value if hasattr(inv.status, "value") else str(inv.status),
+            "approved_by_id": str(inv.approved_by_id) if inv.approved_by_id else None,
+            "created_at": inv.created_at.isoformat() if inv.created_at else None,
+            "approved_at": inv.approved_at.isoformat() if inv.approved_at else None,
+            "executed_at": inv.executed_at.isoformat() if inv.executed_at else None,
+            "health_check_passed": inv.health_check_passed,
+            "payload_sha256": inv.payload_sha256,
+            "execution_result": inv.execution_result,
+            "error_message": inv.error_message,
+        }
+        for inv in invocations
+    ]
+
+    timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+    if format.lower() == "text":
+        lines = [
+            f"# AMBER SRE AUDIT LOG TRAIL — {len(records)} ENTRIES",
+            f"# Generated at: {datetime.now(timezone.utc).isoformat()} | Requester: {current_user.identity}",
+            "# " + "=" * 70,
+            ""
+        ]
+        for idx, rec in enumerate(records, 1):
+            health = "PASSED" if rec["health_check_passed"] else ("FAILED" if rec["health_check_passed"] is False else "N/A")
+            lines.append(f"[{idx}] {rec['created_at'] or 'UNKNOWN'} | Tool: {rec['tool_name']} | Status: {rec['status']}")
+            lines.append(f"    Approver: {rec['approved_by_id'] or 'Authorized SRE'} | Hash: {rec['payload_sha256'] or 'N/A'}")
+            lines.append(f"    Health Probe: {health} | Args: {json.dumps(rec['tool_args'] or {})}")
+            if rec["error_message"]:
+                lines.append(f"    Error: {rec['error_message']}")
+            lines.append("")
+
+        text_content = "\n".join(lines)
+        headers = {}
+        if download:
+            headers["Content-Disposition"] = f'attachment; filename="amber_audit_{timestamp_str}.log"'
+        return Response(content=text_content, media_type="text/plain; charset=utf-8", headers=headers)
+
+    # JSON format
+    json_bytes = json.dumps({"total": len(records), "limit": safe_limit, "audit_trail": records}, indent=2).encode("utf-8")
+    headers = {}
+    if download:
+        headers["Content-Disposition"] = f'attachment; filename="amber_audit_{timestamp_str}.json"'
+    return Response(content=json_bytes, media_type="application/json", headers=headers)
+
