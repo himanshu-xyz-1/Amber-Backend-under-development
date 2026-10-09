@@ -9,9 +9,9 @@ Tests:
 - Auto-rollback loop prevention (rollback_family check in approval_service)
 """
 
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 
 # ──────────────────────────────────────────────
 # JSON Extraction Tests
@@ -229,8 +229,9 @@ class TestLocalLLMGracefulFailure:
             mock_settings.LOCAL_LLM_MODEL = "qwen2.5-coder:14b"
             mock_settings.LOCAL_LLM_CONTEXT_LENGTH = 16384
 
-            from backend.app.core.llm import LLMGateway
             import httpx
+
+            from backend.app.core.llm import LLMGateway
 
             gw = LLMGateway()
             with patch("httpx.AsyncClient") as mock_client_cls:
@@ -260,10 +261,11 @@ class TestAutoRollbackLoopPrevention:
         rollback_deployment fails → auto-rollback should NOT trigger another rollback.
         Without the fix: it would undo the rollback, restoring the broken version!
         """
-        from unittest.mock import AsyncMock, MagicMock, patch
-        from backend.app.services.approval_service import execute_tool_approval
-        from backend.app.models.tool_invocation import InvocationStatus
         import uuid
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        from backend.app.models.tool_invocation import InvocationStatus
+        from backend.app.services.approval_service import execute_tool_approval
 
         mock_invocation = MagicMock()
         mock_invocation.id = uuid.uuid4()
@@ -309,10 +311,11 @@ class TestAutoRollbackLoopPrevention:
         restart_service_pod fails → NO deployment rollback should be triggered.
         Pod restarts are pod-level operations; auto-rollback only applies to deployments.
         """
-        from unittest.mock import AsyncMock, MagicMock, patch
-        from backend.app.services.approval_service import execute_tool_approval
-        from backend.app.models.tool_invocation import InvocationStatus
         import uuid
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        from backend.app.models.tool_invocation import InvocationStatus
+        from backend.app.services.approval_service import execute_tool_approval
 
         mock_invocation = MagicMock()
         mock_invocation.id = uuid.uuid4()
@@ -376,8 +379,9 @@ class TestWebhookFailClosed:
     @pytest.mark.asyncio
     async def test_missing_secret_production_rejects(self):
         """In production, missing WEBHOOK_SECRET must reject requests (fail-closed)."""
-        from fastapi import HTTPException
         from unittest.mock import MagicMock, patch
+
+        from fastapi import HTTPException
 
         with patch("backend.app.auth.security.settings") as mock_settings:
             mock_settings.WEBHOOK_SECRET = None
@@ -412,8 +416,9 @@ class TestGeminiAndOllamaProtocols:
     @pytest.mark.asyncio
     async def test_gemini_passes_key_in_header_not_url(self):
         """Verify Gemini API key is sent in x-goog-api-key header and never in the URL."""
-        from backend.app.core.llm import LLMGateway
         from unittest.mock import AsyncMock, MagicMock, patch
+
+        from backend.app.core.llm import LLMGateway
 
         with patch("backend.app.core.llm.settings") as mock_settings:
             mock_settings.LLM_PROVIDER = "gemini"
@@ -450,8 +455,9 @@ class TestGeminiAndOllamaProtocols:
     @pytest.mark.asyncio
     async def test_air_gapped_dispatcher_suppresses_external_channels(self):
         """When AIR_GAPPED is True, dispatcher must not call external Slack/Telegram/WhatsApp APIs."""
-        from backend.app.integrations.dispatcher import dispatch_incident_notifications
         from unittest.mock import patch
+
+        from backend.app.integrations.dispatcher import dispatch_incident_notifications
 
         with patch("backend.app.core.config.settings.AIR_GAPPED", True):
             result = await dispatch_incident_notifications(

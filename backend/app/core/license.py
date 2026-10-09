@@ -8,7 +8,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
@@ -29,7 +29,7 @@ class LicenseManager:
     Manages offline cryptographic verification of Amber Enterprise commercial licenses.
     """
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: str | None = None):
         import os
         self._raw_token = token
         self._public_key = serialization.load_pem_public_key(AMBER_MASTER_PUBLIC_KEY_PEM)
@@ -49,7 +49,7 @@ class LicenseManager:
             self.tier: str = "community"
             self.max_nodes: int = 15
             self.max_services: int = 20
-        self.features: List[str] = [
+        self.features: list[str] = [
             "triage", 
             "read_only", 
             "alert_deduplication", 
@@ -59,13 +59,13 @@ class LicenseManager:
             "post_mortem_generator", 
             "standard_runbooks"
         ]
-        self.expires_at: Optional[datetime] = None
+        self.expires_at: datetime | None = None
         self.days_remaining: int = 0
-        self.error_message: Optional[str] = None
+        self.error_message: str | None = None
 
         self._validate()
 
-    def reload(self, token: Optional[str] = None):
+    def reload(self, token: str | None = None):
         self._raw_token = token
         self._validate()
 
@@ -149,7 +149,7 @@ class LicenseManager:
         except Exception as e:
             self.is_valid = False
             self.status = "invalid"
-            self.error_message = f"Failed to parse license key: {str(e)}"
+            self.error_message = f"Failed to parse license key: {e}"
 
     def is_feature_enabled(self, feature: str) -> bool:
         """
@@ -161,9 +161,9 @@ class LicenseManager:
 
     def check_infrastructure_limits(
         self,
-        node_count: Optional[int] = None,
-        service_count: Optional[int] = None
-    ) -> Tuple[bool, Optional[str]]:
+        node_count: int | None = None,
+        service_count: int | None = None
+    ) -> tuple[bool, str | None]:
         """
         Enforces licensed node and service limits.
         """
@@ -173,7 +173,7 @@ class LicenseManager:
             return False, f"Service limit exceeded: {service_count} monitored services detected (licensed max: {self.max_services})."
         return True, None
 
-    def get_license_details(self) -> Dict[str, Any]:
+    def get_license_details(self) -> dict[str, Any]:
         return {
             "is_valid": self.is_valid,
             "status": self.status,

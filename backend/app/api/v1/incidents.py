@@ -7,29 +7,33 @@ Auth policy:
 - GET /incidents/{id}/timeline, /post-mortem: Public read.
 """
 
-from typing import List, Optional
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from backend.app.auth.security import require_api_key, AuthenticatedUser
+from backend.app.auth.security import AuthenticatedUser, require_api_key
 from backend.app.core.database import get_db
-from backend.app.models.incident import Incident, IncidentSeverity, IncidentStatus
 from backend.app.models.alert import Alert
+from backend.app.models.incident import Incident, IncidentSeverity, IncidentStatus
 from backend.app.models.tool_invocation import ToolInvocation
-from backend.app.schemas.incident import IncidentCreate, IncidentResponse, IncidentUpdate
 from backend.app.schemas.approval import ApprovalResponse
+from backend.app.schemas.incident import (
+    IncidentCreate,
+    IncidentResponse,
+    IncidentUpdate,
+)
 from backend.app.services.post_mortem import generate_incident_post_mortem
-from fastapi.responses import PlainTextResponse
 
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
 
-@router.get("", response_model=List[IncidentResponse])
+@router.get("", response_model=list[IncidentResponse])
 async def list_incidents(
-    status: Optional[str] = None,
-    severity: Optional[str] = None,
+    status: str | None = None,
+    severity: str | None = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -125,7 +129,7 @@ async def delete_incident(
     await db.commit()
 
 
-@router.get("/{incident_id}/timeline", response_model=List[ApprovalResponse])
+@router.get("/{incident_id}/timeline", response_model=list[ApprovalResponse])
 async def get_incident_timeline(
     incident_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -143,7 +147,7 @@ async def get_incident_timeline(
 @router.get("/{incident_id}/post-mortem")
 async def get_incident_post_mortem_report(
     incident_id: UUID,
-    format: Optional[str] = Query("markdown", description="Format: 'markdown' or 'json'"),
+    format: str | None = Query("markdown", description="Format: 'markdown' or 'json'"),
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_api_key),
 ):

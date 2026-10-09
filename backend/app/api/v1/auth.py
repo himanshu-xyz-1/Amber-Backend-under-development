@@ -4,18 +4,18 @@ Supports Google Workspace, Okta, Azure AD, and generic SAML 2.0 / OIDC integrati
 Enforces Role-Based Access Control (RBAC) and issues cryptographically signed JWT sessions.
 """
 
-from datetime import datetime, timezone, timedelta
 import logging
-from typing import Any, Dict, List, Optional
 import uuid
-import jwt
-from pydantic import BaseModel, Field
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
+import jwt
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from backend.app.auth.security import require_api_key, AuthenticatedUser
+from backend.app.auth.security import AuthenticatedUser, require_api_key
 from backend.app.core.config import settings
 from backend.app.core.database import get_db
 from backend.app.core.k8s import list_k8s_contexts
@@ -29,8 +29,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication & SSO"])
 class SSOCallbackRequest(BaseModel):
     provider: str = Field(..., description="IdP Provider: 'google', 'okta', 'azure_ad', 'saml'")
     email: str = Field(..., description="Corporate SSO work email")
-    full_name: Optional[str] = Field(None, description="Full name from IdP")
-    groups: Optional[List[str]] = Field(default=[], description="SAML/OIDC claim groups (e.g., ['sre-leads'])")
+    full_name: str | None = Field(None, description="Full name from IdP")
+    groups: list[str] | None = Field(default=[], description="SAML/OIDC claim groups (e.g., ['sre-leads'])")
 
 
 class SSOTokenResponse(BaseModel):
@@ -41,11 +41,11 @@ class SSOTokenResponse(BaseModel):
     email: str
     full_name: str
     role: str
-    permissions: List[str]
-    cluster_contexts: List[str]
+    permissions: list[str]
+    cluster_contexts: list[str]
 
 
-def resolve_role_from_groups(groups: List[str], email: str) -> UserRole:
+def resolve_role_from_groups(groups: list[str], email: str) -> UserRole:
     """
     Maps enterprise SAML/OIDC groups or email prefixes to Amber RBAC roles.
     """
@@ -63,7 +63,7 @@ def resolve_role_from_groups(groups: List[str], email: str) -> UserRole:
     return UserRole.DEVELOPER
 
 
-def get_role_permissions(role: str) -> List[str]:
+def get_role_permissions(role: str) -> list[str]:
     """Returns granular capability permissions for an RBAC role."""
     role_norm = role.upper()
     if role_norm == "ADMIN":
@@ -101,7 +101,7 @@ def get_role_permissions(role: str) -> List[str]:
 
 
 @router.get("/sso/config")
-async def get_sso_configuration() -> Dict[str, Any]:
+async def get_sso_configuration() -> dict[str, Any]:
     """
     Returns enterprise SSO and SAML/OIDC status for the frontend console.
     """
@@ -193,7 +193,7 @@ async def sso_callback(
 async def get_current_user_profile(
     current_user: AuthenticatedUser = Depends(require_api_key),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Returns the authenticated user's active session, RBAC role, permissions, and multi-cluster access.
     """
@@ -215,7 +215,7 @@ async def get_current_user_profile(
 @router.get("/clusters")
 async def list_connected_clusters(
     current_user: AuthenticatedUser = Depends(require_api_key),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Returns all connected Kubernetes cluster contexts and their active health states.
     Allows SREs to switch contexts across multiple production clusters.

@@ -4,7 +4,7 @@ Loads, validates, and exposes strongly-typed environment variables via Pydantic 
 """
 
 from functools import lru_cache
-from typing import List, Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # 2. Server & Networking
     HOST: str = "0.0.0.0"
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "https://ambersre.xyz",
         "https://www.ambersre.xyz"
@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    AMBER_API_KEY: Optional[str] = None
-    WEBHOOK_SECRET: Optional[str] = None
+    AMBER_API_KEY: str | None = None
+    WEBHOOK_SECRET: str | None = None
 
     # 6. LLM Provider — Universal Lego Brain Socket
     # Switch between: 'local' (Ollama/vLLM/any OpenAI-compatible), 'anthropic', 'openai', 'gemini'
@@ -59,7 +59,7 @@ class Settings(BaseSettings):
 
     # Amber AI Proxy URL — routes cloud calls through Amber's backend (client uses license key, not master API key)
     # If set, ANTHROPIC_API_KEY is NOT required on client machines.
-    AMBER_AI_PROXY_URL: Optional[str] = None
+    AMBER_AI_PROXY_URL: str | None = None
 
     # Air-gapped mode: hard-blocks ALL outbound cloud API calls at code level.
     # Set to True for banks, defense, or zero-egress enterprise deployments.
@@ -70,35 +70,35 @@ class Settings(BaseSettings):
     AUTO_ROLLBACK_ENABLED: bool = False
 
     # LLM Provider API Keys (cloud mode)
-    OPENAI_API_KEY: Optional[str] = None
-    GEMINI_API_KEY: Optional[str] = None
-    ANTHROPIC_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: str | None = None
+    GEMINI_API_KEY: str | None = None
+    ANTHROPIC_API_KEY: str | None = None
 
     # 7. Telemetry & Observability (Langfuse)
-    LANGFUSE_PUBLIC_KEY: Optional[str] = None
-    LANGFUSE_SECRET_KEY: Optional[str] = None
+    LANGFUSE_PUBLIC_KEY: str | None = None
+    LANGFUSE_SECRET_KEY: str | None = None
     LANGFUSE_HOST: str = "https://cloud.langfuse.com"
     LANGFUSE_ENABLED: bool = False
 
     # 8. Integrations & Notifications
-    SLACK_WEBHOOK_URL: Optional[str] = None
-    TELEGRAM_BOT_TOKEN: Optional[str] = None
-    TELEGRAM_CHAT_ID: Optional[str] = None
-    TELEGRAM_ADMIN_CHAT_IDS: Optional[str] = None  # Comma-separated admin chat IDs authorized to approve/reject
-    TWILIO_ACCOUNT_SID: Optional[str] = None
-    TWILIO_AUTH_TOKEN: Optional[str] = None
-    TWILIO_WHATSAPP_FROM: Optional[str] = None  # e.g., "whatsapp:+14155238886"
-    WHATSAPP_ALERT_TO: Optional[str] = None     # e.g., "919876543210" or "whatsapp:+919876543210"
-    WHATSAPP_BRIDGE_URL: Optional[str] = None   # e.g., "http://localhost:3001" for self-hosted QR bridge
+    SLACK_WEBHOOK_URL: str | None = None
+    TELEGRAM_BOT_TOKEN: str | None = None
+    TELEGRAM_CHAT_ID: str | None = None
+    TELEGRAM_ADMIN_CHAT_IDS: str | None = None  # Comma-separated admin chat IDs authorized to approve/reject
+    TWILIO_ACCOUNT_SID: str | None = None
+    TWILIO_AUTH_TOKEN: str | None = None
+    TWILIO_WHATSAPP_FROM: str | None = None  # e.g., "whatsapp:+14155238886"
+    WHATSAPP_ALERT_TO: str | None = None     # e.g., "919876543210" or "whatsapp:+919876543210"
+    WHATSAPP_BRIDGE_URL: str | None = None   # e.g., "http://localhost:3001" for self-hosted QR bridge
     DASHBOARD_URL: str = "https://ambersre.xyz"
     GMAIL_USER: str = "amber.incident@gmail.com"
-    GMAIL_APP_PASSWORD: Optional[str] = None
+    GMAIL_APP_PASSWORD: str | None = None
 
     # 9. Monetization, Billing & Enterprise Licensing
-    STRIPE_SECRET_KEY: Optional[str] = None
-    STRIPE_PUBLISHABLE_KEY: Optional[str] = None
-    STRIPE_WEBHOOK_SECRET: Optional[str] = None
-    AMBER_LICENSE_KEY: Optional[str] = None
+    STRIPE_SECRET_KEY: str | None = None
+    STRIPE_PUBLISHABLE_KEY: str | None = None
+    STRIPE_WEBHOOK_SECRET: str | None = None
+    AMBER_LICENSE_KEY: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

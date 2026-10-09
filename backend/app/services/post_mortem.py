@@ -4,19 +4,18 @@ Generates comprehensive, audit-ready Incident Post-Mortem reports in standard
 Google SRE / Netflix SRE Markdown format.
 """
 
-from datetime import datetime, timezone
 import json
-from typing import List, Optional
+from datetime import datetime, timezone
 
-from backend.app.models.incident import Incident
 from backend.app.models.alert import Alert
+from backend.app.models.incident import Incident
 from backend.app.models.tool_invocation import ToolInvocation
 
 
 def generate_incident_post_mortem(
     incident: Incident,
-    alerts: Optional[List[Alert]] = None,
-    invocations: Optional[List[ToolInvocation]] = None,
+    alerts: list[Alert] | None = None,
+    invocations: list[ToolInvocation] | None = None,
 ) -> str:
     """
     Renders an executive-grade Markdown post-mortem report for an incident.

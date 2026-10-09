@@ -1,20 +1,23 @@
-from fastapi import APIRouter, Depends
-from typing import Dict, Any
-
-from backend.app.auth.security import require_api_key
-from backend.app.core.kill_switch import kill_switch
-from backend.app.core.database import AsyncSessionLocal
-from sqlalchemy import update
-from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus
-from datetime import datetime, timezone
 import logging
+from datetime import datetime, timezone
+from typing import Any
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import update
+
+from backend.app.auth.security import AuthenticatedUser, require_api_key
+from backend.app.core.database import AsyncSessionLocal
+from backend.app.core.kill_switch import kill_switch
+from backend.app.models.tool_invocation import InvocationStatus, ToolInvocation
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
 @router.post("/kill-switch")
-async def engage_kill_switch(auth: str = Depends(require_api_key)) -> Dict[str, Any]:
+async def engage_kill_switch(
+    _current_user: AuthenticatedUser = Depends(require_api_key),
+) -> dict[str, Any]:
     """
     Emergency Kill-Switch. Immediately downgrades Amber to Read-Only Observation Mode.
     All queued mutating actions are instantaneously canceled.
@@ -43,7 +46,9 @@ async def engage_kill_switch(auth: str = Depends(require_api_key)) -> Dict[str, 
     }
 
 @router.delete("/kill-switch")
-async def disengage_kill_switch(auth: str = Depends(require_api_key)) -> Dict[str, Any]:
+async def disengage_kill_switch(
+    _current_user: AuthenticatedUser = Depends(require_api_key),
+) -> dict[str, Any]:
     """
     Disengage the emergency Kill-Switch and resume autonomous operations.
     """
@@ -54,7 +59,10 @@ async def disengage_kill_switch(auth: str = Depends(require_api_key)) -> Dict[st
     }
 
 @router.get("/kill-switch/status")
-async def kill_switch_status(auth: str = Depends(require_api_key)) -> Dict[str, Any]:
+async def kill_switch_status(
+    _current_user: AuthenticatedUser = Depends(require_api_key),
+) -> dict[str, Any]:
     return {
         "engaged": kill_switch.is_engaged
     }
+

@@ -1,11 +1,12 @@
-import pytest
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from backend.app.core.k8s import (
-    k8s_restart_pod,
-    k8s_rollout_restart_deployment,
-    k8s_rollback_deployment,
     k8s_check_deployment_health,
+    k8s_restart_pod,
+    k8s_rollback_deployment,
+    k8s_rollout_restart_deployment,
 )
 from backend.app.tools.base import tool_registry
 

@@ -1,6 +1,6 @@
 import math
 import re
-from typing import Any, Dict, List, Union
+from typing import Any
 
 
 def calculate_shannon_entropy(text: str) -> float:
@@ -51,7 +51,7 @@ def redact_string(text: str) -> str:
     return " ".join(redacted_words)
 
 
-def sanitize_payload(obj: Union[Dict, List, str, Any]) -> Any:
+def sanitize_payload(obj: dict | list | str | Any) -> Any:
     """Recursively walks arbitrary nested JSON payloads to scrub sensitive strings and keys."""
     if isinstance(obj, str):
         return redact_string(obj)

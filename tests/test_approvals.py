@@ -1,11 +1,19 @@
-import pytest
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
-from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus, RiskLevel
-from backend.app.models.incident import Incident, IncidentStatus, IncidentSeverity
-from backend.app.services.approval_service import execute_tool_approval, ApprovalExecutionError
+import pytest
+
 from backend.app.core.database import AsyncSessionLocal, Base, engine
+from backend.app.models.incident import Incident, IncidentSeverity, IncidentStatus
+from backend.app.models.tool_invocation import (
+    InvocationStatus,
+    RiskLevel,
+    ToolInvocation,
+)
+from backend.app.services.approval_service import (
+    ApprovalExecutionError,
+    execute_tool_approval,
+)
 
 
 @pytest.mark.asyncio
@@ -81,8 +89,9 @@ async def test_execute_tool_approval_lifecycle():
 
 def test_audit_api_json_and_text_export():
     from fastapi.testclient import TestClient
-    from backend.app.main import app
+
     from backend.app.core.config import settings
+    from backend.app.main import app
 
     client = TestClient(app)
     headers = {"X-API-Key": settings.AMBER_API_KEY}
@@ -109,7 +118,10 @@ def test_audit_api_json_and_text_export():
 
 @pytest.mark.asyncio
 async def test_telegram_audit_command_and_document_download(monkeypatch):
-    from backend.app.integrations.telegram_bot import handle_audit_command, handle_telegram_callback
+    from backend.app.integrations.telegram_bot import (
+        handle_audit_command,
+        handle_telegram_callback,
+    )
 
     sent_messages = []
     sent_documents = []

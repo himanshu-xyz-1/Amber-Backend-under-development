@@ -1,8 +1,11 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any
+
 from sqlalchemy import select
+
 from backend.app.core.database import AsyncSessionLocal
 from backend.app.models.runbook import Runbook
+
 from .state import AmberGraphState
 
 logger = logging.getLogger(__name__)
@@ -54,7 +57,7 @@ async def rag_node(state: AmberGraphState) -> dict:
     alert_payload = state.get("alert_payload", {})
     alert_text = f"{alert_payload.get('title', '')} {alert_payload.get('message', '')} {service}".lower()
 
-    matched_runbooks: List[Dict[str, Any]] = []
+    matched_runbooks: list[dict[str, Any]] = []
 
     # 1. Search Canonical Knowledge Base
     for rb in CANONICAL_RUNBOOKS:

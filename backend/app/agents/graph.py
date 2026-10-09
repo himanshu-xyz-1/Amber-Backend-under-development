@@ -1,8 +1,10 @@
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
+
+from .investigation import investigation_node
+from .rag import rag_node
 from .state import AmberGraphState
 from .triage import triage_node
-from .rag import rag_node
-from .investigation import investigation_node
+
 
 async def guardrail_node(state: AmberGraphState) -> dict:
     """

@@ -1,14 +1,14 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app.main import app
 from backend.app.core.config import settings
 from backend.app.core.k8s import (
-    list_k8s_contexts,
+    k8s_check_deployment_health,
     k8s_restart_pod,
     k8s_rollout_restart_deployment,
-    k8s_check_deployment_health,
+    list_k8s_contexts,
 )
+from backend.app.main import app
 
 
 def test_sso_configuration_endpoint():

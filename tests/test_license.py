@@ -6,14 +6,14 @@ without requiring any founder private keys on disk.
 
 import base64
 import json
-import pytest
 from datetime import datetime, timedelta, timezone
 
-from cryptography.hazmat.primitives.asymmetric import ed25519
+import pytest
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
 
-from backend.app.core.license import LicenseManager
 import backend.app.core.license as license_module
+from backend.app.core.license import LicenseManager
 
 # ──────────────────────────────────────────────────────────────────────
 # Ephemeral Ed25519 Keypair for CI test isolation
@@ -98,6 +98,7 @@ def test_community_mode_when_no_token():
 
 def test_license_status_api():
     from fastapi.testclient import TestClient
+
     from backend.app.main import app
 
     client = TestClient(app)
@@ -111,6 +112,7 @@ def test_license_status_api():
 
 def test_license_activate_api():
     from fastapi.testclient import TestClient
+
     from backend.app.main import app
 
     client = TestClient(app)

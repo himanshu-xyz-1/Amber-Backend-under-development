@@ -9,9 +9,9 @@ heuristics — Amber never crashes, it just keeps working.
 
 import logging
 import time
-from typing import Tuple
 
 from backend.app.core.llm import llm_gateway
+
 from .state import AmberGraphState
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ TRIAGE_SYSTEM_PROMPT = (
 )
 
 
-def _classify_heuristic(title: str, message: str, service: str) -> Tuple[str, str]:
+def _classify_heuristic(title: str, message: str, service: str) -> tuple[str, str]:
     """
     Deterministic rule-based SRE heuristic classifier.
     Used when LLM is unavailable, rate-limited, or trust level is too low.

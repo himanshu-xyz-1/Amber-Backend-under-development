@@ -1,13 +1,16 @@
-from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from backend.app.auth.security import require_api_key, AuthenticatedUser
+from backend.app.auth.security import AuthenticatedUser, require_api_key
 from backend.app.core.database import get_db
-from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus
+from backend.app.models.tool_invocation import InvocationStatus, ToolInvocation
 from backend.app.schemas.approval import ApprovalRequest, ApprovalResponse
-from backend.app.services.approval_service import execute_tool_approval, ApprovalExecutionError
+from backend.app.services.approval_service import (
+    ApprovalExecutionError,
+    execute_tool_approval,
+)
 
 router = APIRouter(prefix="/approvals", tags=["Approvals"])
 
@@ -42,7 +45,7 @@ async def submit_approval(
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
 
-@router.get("/pending", response_model=List[ApprovalResponse])
+@router.get("/pending", response_model=list[ApprovalResponse])
 async def list_pending_approvals(
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_api_key)
@@ -72,6 +75,7 @@ async def get_audit_trail(
     """
     import json
     from datetime import datetime, timezone
+
     from fastapi.responses import Response
 
     safe_limit = max(1, min(100, limit))

@@ -7,10 +7,9 @@ for REST endpoints, approvals, and dynamic license activation.
 import hashlib
 import hmac
 import logging
-from typing import Optional, List
 import uuid
 
-from fastapi import Depends, HTTPException, Header, Query, Request, Security, status
+from fastapi import Depends, Header, HTTPException, Query, Request, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
@@ -29,14 +28,14 @@ def hash_api_key(raw_key: str) -> str:
 class AuthenticatedUser(BaseModel):
     identity: str
     role: str = "sre_admin"
-    user_id: Optional[uuid.UUID] = None
+    user_id: uuid.UUID | None = None
     auth_method: str = "api_key"
 
 
 async def require_api_key(
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
-    x_approver_email: Optional[str] = Header(None, alias="X-Approver-Email"),
-    bearer: Optional[HTTPAuthorizationCredentials] = Security(security_bearer),
+    x_api_key: str | None = Header(None, alias="X-API-Key"),
+    x_approver_email: str | None = Header(None, alias="X-Approver-Email"),
+    bearer: HTTPAuthorizationCredentials | None = Security(security_bearer),
 ) -> AuthenticatedUser:
     """
     Enforces authentication for administrative & approval REST routes.
@@ -62,9 +61,10 @@ async def require_api_key(
     # 1. Per-User Scoped API Key Verification (SHA-256 hash match against users table)
     token_hash = hash_api_key(clean_token)
     try:
+        from sqlalchemy import select
+
         from backend.app.core.database import AsyncSessionLocal
         from backend.app.models.user import User
-        from sqlalchemy import select
 
         async with AsyncSessionLocal() as session:
             user_res = await session.execute(
@@ -100,8 +100,8 @@ async def require_api_key(
             user_id=user_id_val,
             auth_method="jwt"
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"JWT verification skipped or token invalid, falling back to master API key: {e}")
 
     # 3. Master System API Key Check
     configured_key = settings.AMBER_API_KEY
@@ -109,9 +109,10 @@ async def require_api_key(
         if x_approver_email:
             clean_email = x_approver_email.strip().lower()
             try:
+                from sqlalchemy import select
+
                 from backend.app.core.database import AsyncSessionLocal
                 from backend.app.models.user import User
-                from sqlalchemy import select
                 async with AsyncSessionLocal() as session:
                     user_res = await session.execute(
                         select(User).filter(User.email == clean_email, User.is_active == True)
@@ -156,8 +157,8 @@ async def require_api_key(
 
 async def require_webhook_auth(
     request: Request,
-    x_webhook_secret: Optional[str] = Header(None, alias="X-Webhook-Secret"),
-    token: Optional[str] = Query(None),
+    x_webhook_secret: str | None = Header(None, alias="X-Webhook-Secret"),
+    token: str | None = Query(None),
 ) -> bool:
     """
     Guards incoming webhook intake against unauthenticated spam and fake alert injection.
@@ -199,7 +200,7 @@ async def require_webhook_auth(
     return True
 
 
-def require_roles(allowed_roles: List[str]):
+def require_roles(allowed_roles: list[str]):
     """
     Enforces Role-Based Access Control (RBAC) on API routes.
     Validates that the authenticated user possesses an allowed role.

@@ -1,17 +1,17 @@
 import logging
 import time
-from typing import List
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
 from backend.app.core.config import settings
 from backend.app.core.database import AsyncSessionLocal
 from backend.app.core.k8s import (
+    K8sExecutionError,
+    k8s_check_deployment_health,
     k8s_restart_pod,
     k8s_rollback_deployment,
     k8s_rollout_restart_deployment,
-    k8s_check_deployment_health,
-    K8sExecutionError,
 )
 from backend.app.tools.base import BaseTool, RiskLevel, ToolResult, tool_registry
 
@@ -72,7 +72,7 @@ class KillDatabaseConnections(BaseTool):
 
     async def execute(self, **kwargs) -> ToolResult:
         start_time = time.time()
-        pids: List[int] = kwargs.get("pids", [])
+        pids: list[int] = kwargs.get("pids", [])
         target_db_url = kwargs.get("target_db_url")
         terminated_pids = []
         failed_pids = []
@@ -105,7 +105,7 @@ class KillDatabaseConnections(BaseTool):
                 return ToolResult(
                     success=False,
                     data={"terminated_pids": [], "failed_pids": pids},
-                    error=f"Could not connect to target database: {str(e)}",
+                    error=f"Could not connect to target database: {e}",
                     execution_time_ms=(time.time() - start_time) * 1000
                 )
         elif settings.ENVIRONMENT not in ("test", "development"):
@@ -126,8 +126,8 @@ class KillDatabaseConnections(BaseTool):
                     try:
                         count_res = await session.execute(text("SELECT count(*) FROM pg_stat_activity WHERE state IS NOT NULL;"))
                         active_before = count_res.scalar()
-                    except Exception:
-                        pass
+                    except Exception as err:
+                        logger.debug(f"Pre-check pg_stat_activity query failed: {err}")
 
                     # 2. Terminate target PIDs using bound parameters
                     for pid in pids:
@@ -150,8 +150,8 @@ class KillDatabaseConnections(BaseTool):
                     try:
                         count_after_res = await session.execute(text("SELECT count(*) FROM pg_stat_activity WHERE state IS NOT NULL;"))
                         active_after = count_after_res.scalar()
-                    except Exception:
-                        pass
+                    except Exception as err:
+                        logger.debug(f"Post-check pg_stat_activity query failed: {err}")
                 else:
                     dialect_name = session.bind.dialect.name if session.bind else "unknown"
                     logger.error(f"Target database is not PostgreSQL ({dialect_name}). Connection termination is PostgreSQL-only.")

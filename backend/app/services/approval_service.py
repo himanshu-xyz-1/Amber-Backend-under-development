@@ -4,21 +4,23 @@ Shared service for executing human-in-the-loop (HITL) remediations
 across Web Dashboard, Telegram Bot, and Slack integrations.
 """
 
-from datetime import datetime, timezone
 import inspect
 import logging
-from typing import Optional
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from backend.app.core.config import settings
-from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus, RiskLevel
-from backend.app.models.incident import Incident, IncidentStatus
-from backend.app.tools.base import tool_registry
 from backend.app.core.kill_switch import kill_switch
-
+from backend.app.models.incident import Incident, IncidentStatus
+from backend.app.models.tool_invocation import (
+    InvocationStatus,
+    RiskLevel,
+    ToolInvocation,
+)
+from backend.app.tools.base import tool_registry
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +36,8 @@ async def execute_tool_approval(
     tool_invocation_id: str,
     action: str,
     db: AsyncSession,
-    approved_by_id: Optional[uuid.UUID] = None,
-    payload_sha256: Optional[str] = None,
+    approved_by_id: uuid.UUID | None = None,
+    payload_sha256: str | None = None,
     approver_label: str = "Authorized SRE",
 ) -> ToolInvocation:
     """
@@ -196,7 +198,7 @@ async def execute_tool_approval(
                             )
 
                 except Exception as e:
-                    logger.exception(f"Error executing approved tool {invocation.tool_name}: {e}")
+                    logger.exception(f"Error executing approved tool {invocation.tool_name}")
                     invocation.status = InvocationStatus.FAILED
                     invocation.error_message = str(e)
                     invocation.executed_at = datetime.now(timezone.utc)

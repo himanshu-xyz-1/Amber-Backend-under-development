@@ -1,8 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Any
 from uuid import UUID
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class AlertSource(str, Enum):
     PAGERDUTY = "PAGERDUTY"
@@ -14,19 +16,19 @@ class AlertSource(str, Enum):
 
 class WebhookPayload(BaseModel):
     source: AlertSource = Field(..., description="Source of the alert")
-    raw_payload: Dict[str, Any] = Field(..., description="Raw payload from the external system")
-    source_alert_id: Optional[str] = Field(None, description="ID of the alert in the source system")
-    title: Optional[str] = Field(None, description="Title of the alert")
+    raw_payload: dict[str, Any] = Field(..., description="Raw payload from the external system")
+    source_alert_id: str | None = Field(None, description="ID of the alert in the source system")
+    title: str | None = Field(None, description="Title of the alert")
 
 class AlertResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    incident_id: Optional[UUID] = None
+    incident_id: UUID | None = None
     source: AlertSource
     fingerprint: str
-    raw_payload: Dict[str, Any]
-    sanitized_payload: Optional[Dict[str, Any]] = None
+    raw_payload: dict[str, Any]
+    sanitized_payload: dict[str, Any] | None = None
     ingested_at: datetime
 
 class WebhookAckResponse(BaseModel):

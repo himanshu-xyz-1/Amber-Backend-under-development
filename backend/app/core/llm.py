@@ -23,7 +23,7 @@ Safety guarantees:
 import json
 import logging
 import re
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # LEVEL_2: High trust — full proposals, human approval still required.
 # LEVEL_3: Enterprise — full proposals + auto-fix eligible (if client enables it).
 # ──────────────────────────────────────────────
-MODEL_TRUST_REGISTRY: Dict[str, int] = {
+MODEL_TRUST_REGISTRY: dict[str, int] = {
     # Certified Observe Only — Level 1
     "qwen2.5-coder:7b": 1,
     "llama3.1:8b": 1,
@@ -72,7 +72,7 @@ try:
     from pathlib import Path
     _evals_file = Path(__file__).resolve().parent.parent.parent.parent / "evals" / "certified_models.json"
     if _evals_file.exists():
-        with open(_evals_file, "r") as _f:
+        with open(_evals_file) as _f:
             _eval_data = json.load(_f)
             for _m, _meta in _eval_data.get("certified_models", {}).items():
                 MODEL_TRUST_REGISTRY[_m] = _meta.get("trust_level", 1)
@@ -163,7 +163,7 @@ def _strip_thinking_tokens(text: str) -> str:
     return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
-def _extract_json(raw: str) -> Optional[Dict[str, Any]]:
+def _extract_json(raw: str) -> dict[str, Any] | None:
     """
     Robust JSON extractor. Handles:
     - Pure JSON
@@ -222,7 +222,7 @@ class LLMGateway:
         temperature: float = 0.2,
         timeout: float = 45.0,
         _retry: bool = True,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Send a prompt to the configured LLM and return a parsed JSON dict.
 
@@ -285,7 +285,7 @@ class LLMGateway:
 
     async def _call_local(
         self, prompt: str, system_prompt: str, temperature: float, timeout: float
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Calls local endpoint. Supports:
         1. Native Ollama (/api/chat) with options.num_ctx and think: false
@@ -299,7 +299,7 @@ class LLMGateway:
         is_ollama = "11434" in endpoint or endpoint.endswith("/v1")
 
         if is_ollama:
-            base_url = endpoint[:-3] if endpoint.endswith("/v1") else endpoint
+            base_url = endpoint.removesuffix("/v1")
             url = f"{base_url}/api/chat"
             payload = {
                 "model": model,
@@ -365,7 +365,7 @@ class LLMGateway:
 
     async def _call_anthropic(
         self, prompt: str, system_prompt: str, temperature: float, timeout: float
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Calls Claude via Amber AI Proxy (client license key auth) or direct BYOK.
         Client's .env NEVER holds our Anthropic master key — proxy handles that.
@@ -406,7 +406,7 @@ class LLMGateway:
 
     async def _call_openai(
         self, prompt: str, system_prompt: str, temperature: float, timeout: float
-    ) -> Optional[str]:
+    ) -> str | None:
         """Calls OpenAI GPT-4o (or compatible) endpoint."""
         if not settings.OPENAI_API_KEY:
             logger.error("[LLMGateway/openai] No OPENAI_API_KEY configured.")
@@ -435,7 +435,7 @@ class LLMGateway:
 
     async def _call_gemini(
         self, prompt: str, system_prompt: str, temperature: float, timeout: float
-    ) -> Optional[str]:
+    ) -> str | None:
         """Calls Google Gemini via REST using secure x-goog-api-key header (no key in URL)."""
         if not settings.GEMINI_API_KEY:
             logger.error("[LLMGateway/gemini] No GEMINI_API_KEY configured.")
@@ -464,7 +464,7 @@ class LLMGateway:
             data = resp.json()
             return data["candidates"][0]["content"]["parts"][0]["text"]
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """
         Checks if the configured LLM brain is reachable and returns model info.
         Used at startup and by the /health endpoint.

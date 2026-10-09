@@ -1,5 +1,6 @@
 import pytest
-from backend.app.tools.base import tool_registry, RiskLevel
+
+from backend.app.tools.base import RiskLevel, tool_registry
 
 
 def test_tool_registry_registration():

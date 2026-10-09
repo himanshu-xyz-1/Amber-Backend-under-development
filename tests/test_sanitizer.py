@@ -1,7 +1,7 @@
 from backend.app.core.sanitizer import (
     calculate_shannon_entropy,
     redact_string,
-    sanitize_payload
+    sanitize_payload,
 )
 
 

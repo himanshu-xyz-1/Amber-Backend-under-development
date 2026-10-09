@@ -4,6 +4,7 @@ Ensures ENVIRONMENT is always 'test' during test execution.
 """
 
 import os
+
 import pytest
 
 # Enforce test environment before any application imports
@@ -24,7 +25,8 @@ def enforce_test_env(monkeypatch):
 def setup_test_database():
     """Ensures test database tables exist before test execution."""
     import asyncio
-    from backend.app.core.database import engine, Base
+
+    from backend.app.core.database import Base, engine
 
     async def _init():
         async with engine.begin() as conn:

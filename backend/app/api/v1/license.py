@@ -3,15 +3,16 @@ Amber SRE Engine - License Management API Router.
 Enables checking license status and dynamically activating Enterprise keys via Web UI or curl.
 """
 
+import logging
 import os
 import re
-import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from backend.app.auth.security import require_api_key, AuthenticatedUser
+from backend.app.auth.security import AuthenticatedUser, require_api_key
 from backend.app.core.config import settings
-from backend.app.core.license import license_manager, LicenseManager
+from backend.app.core.license import LicenseManager, license_manager
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ def _persist_license_to_env(key: str):
             f.write(f"AMBER_LICENSE_KEY={key}\n")
         return
 
-    with open(env_path, "r") as f:
+    with open(env_path) as f:
         content = f.read()
 
     if re.search(r"^AMBER_LICENSE_KEY=.*", content, re.MULTILINE):

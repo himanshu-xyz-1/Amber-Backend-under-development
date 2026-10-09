@@ -5,7 +5,6 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, field_validator
@@ -18,17 +17,17 @@ router = APIRouter(prefix="/contact", tags=["Contact"])
 
 
 class ContactRequest(BaseModel):
-    name: Optional[str] = None
+    name: str | None = None
     email: str
-    phone: Optional[str] = None
-    selectedPlan: Optional[str] = None
-    selectedInfra: Optional[str] = None
-    clusterScale: Optional[str] = None
-    message: Optional[str] = None
+    phone: str | None = None
+    selectedPlan: str | None = None
+    selectedInfra: str | None = None
+    clusterScale: str | None = None
+    message: str | None = None
 
     @field_validator("email", "name", "phone", mode="after")
     @classmethod
-    def prevent_header_injection(cls, v: Optional[str]) -> Optional[str]:
+    def prevent_header_injection(cls, v: str | None) -> str | None:
         if v and ("\r" in v or "\n" in v):
             raise ValueError("Input cannot contain newline characters (CRLF injection prevention).")
         return v
@@ -113,5 +112,5 @@ Hit 'Reply' in your email client to directly reply to {clean_email}.
         logger.error(f"Failed to send email via SMTP: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to dispatch email: {str(e)}"
+            detail=f"Failed to dispatch email: {e}"
         )

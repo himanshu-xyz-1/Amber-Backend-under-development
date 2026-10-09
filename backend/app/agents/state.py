@@ -1,5 +1,6 @@
 from typing import TypedDict
 
+
 class AmberGraphState(TypedDict, total=False):
     # Input
     incident_id: str

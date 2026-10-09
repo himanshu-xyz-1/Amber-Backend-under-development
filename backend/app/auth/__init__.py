@@ -1,11 +1,16 @@
 from backend.app.auth.security import (
-    require_api_key,
-    require_webhook_auth,
     AuthenticatedUser,
+    hash_api_key,
+    require_api_key,
+    require_roles,
+    require_webhook_auth,
 )
 
 __all__ = [
-    "require_api_key",
-    "require_webhook_auth",
     "AuthenticatedUser",
+    "hash_api_key",
+    "require_api_key",
+    "require_roles",
+    "require_webhook_auth",
 ]
+

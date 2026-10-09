@@ -4,7 +4,8 @@ Dispatches urgent SMS/WhatsApp on-call notifications for P0/P1 incidents requiri
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
+
 import httpx
 
 from backend.app.core.config import settings
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 async def send_whatsapp_incident_alert(
-    incident_data: Dict[str, Any],
-    tool_invocation: Optional[Dict[str, Any]] = None
+    incident_data: dict[str, Any],
+    tool_invocation: dict[str, Any] | None = None
 ) -> bool:
     """
     Sends an urgent WhatsApp message via Twilio API.

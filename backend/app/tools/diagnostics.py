@@ -1,11 +1,12 @@
 import logging
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 import httpx
 from sqlalchemy import text
+
 from backend.app.core.database import AsyncSessionLocal
-from backend.app.core.k8s import k8s_fetch_pod_logs, K8sExecutionError
+from backend.app.core.k8s import K8sExecutionError, k8s_fetch_pod_logs
 from backend.app.core.sanitizer import redact_string
 from backend.app.tools.base import BaseTool, RiskLevel, ToolResult, tool_registry
 
@@ -45,7 +46,7 @@ class QueryDatabaseMetrics(BaseTool):
         active_connections = 42
         max_connections = 100
         pool_utilization_pct = 84.0
-        slow_queries: List[Dict[str, Any]] = []
+        slow_queries: list[dict[str, Any]] = []
 
         try:
             # Attempt real query against active database session
@@ -148,10 +149,7 @@ class FetchPodLogs(BaseTool):
         if "pod_name" not in kwargs or not isinstance(kwargs["pod_name"], str):
             return False
         tail_lines = kwargs.get("tail_lines")
-        if tail_lines is not None:
-            if not isinstance(tail_lines, int) or tail_lines > 500 or tail_lines <= 0:
-                return False
-        return True
+        return tail_lines is None or (isinstance(tail_lines, int) and 0 < tail_lines <= 500)
 
     async def execute(self, **kwargs) -> ToolResult:
         start_time = time.time()
@@ -205,8 +203,8 @@ class CheckServiceHealth(BaseTool):
         url = kwargs.get("endpoint_url")
         if not url or not isinstance(url, str):
             return False
-        from urllib.parse import urlparse
         import ipaddress
+        from urllib.parse import urlparse
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https"):
             return False
@@ -247,7 +245,7 @@ class CheckServiceHealth(BaseTool):
             healthy = False
             status_code = 504
             latency_ms = 8420.0
-            details = f"Probe offline or degraded: {str(e)}"
+            details = f"Probe offline or degraded: {e}"
 
         data = {
             "endpoint_url": url,

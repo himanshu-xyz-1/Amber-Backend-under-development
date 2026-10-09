@@ -3,7 +3,7 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class RiskLevel(Enum):
@@ -14,8 +14,8 @@ class RiskLevel(Enum):
 @dataclass
 class ToolResult:
     success: bool
-    data: Dict[str, Any]
-    error: Optional[str]
+    data: dict[str, Any]
+    error: str | None
     execution_time_ms: float
 
 
@@ -55,7 +55,7 @@ class BaseTool(ABC):
         sorted_json = json.dumps(kwargs, sort_keys=True)
         return hashlib.sha256(sorted_json.encode("utf-8")).hexdigest()
 
-    def to_registry_entry(self) -> Dict[str, Any]:
+    def to_registry_entry(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "description": self.description,
@@ -67,18 +67,18 @@ class BaseTool(ABC):
 
 class ToolRegistry:
     def __init__(self):
-        self._tools: Dict[str, BaseTool] = {}
+        self._tools: dict[str, BaseTool] = {}
 
     def register(self, tool: BaseTool):
         self._tools[tool.name] = tool
 
-    def get(self, name: str) -> Optional[BaseTool]:
+    def get(self, name: str) -> BaseTool | None:
         return self._tools.get(name)
 
-    def list_tools(self) -> List[Dict[str, Any]]:
+    def list_tools(self) -> list[dict[str, Any]]:
         return [tool.to_registry_entry() for tool in self._tools.values()]
 
-    def get_by_risk(self, level: RiskLevel) -> List[BaseTool]:
+    def get_by_risk(self, level: RiskLevel) -> list[BaseTool]:
         return [tool for tool in self._tools.values() if tool.risk_level == level]
 
 

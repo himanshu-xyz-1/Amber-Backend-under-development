@@ -1,18 +1,21 @@
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.app.api.v1 import (
+    approvals_router,
+    auth_router,
+    contact_router,
+    health_router,
+    incidents_router,
+    license_router,
+    settings_router,
+    webhooks_router,
+)
 from backend.app.core.config import settings
-from backend.app.core.database import engine, Base
-from backend.app.api.v1.health import router as health_router
-from backend.app.api.v1.webhooks import router as webhook_router
-from backend.app.api.v1.incidents import router as incident_router
-from backend.app.api.v1.approvals import router as approval_router
-from backend.app.api.v1.contact import router as contact_router
-from backend.app.api.v1.license import router as license_router
-from backend.app.api.v1.settings import router as settings_router
-from backend.app.api.v1.auth import router as auth_router
+from backend.app.core.database import Base, engine
 from backend.app.core.license import license_manager
 
 logger = logging.getLogger(__name__)
@@ -25,10 +28,11 @@ async def lifespan(app: FastAPI):
     
     # 1. Run database schema migrations
     try:
-        import os
         import asyncio
+        import os
         if os.path.exists("alembic.ini"):
             from alembic.config import Config
+
             from alembic import command
             alembic_cfg = Config("alembic.ini")
             alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
@@ -66,9 +70,9 @@ if settings.CORS_ORIGINS:
 
 # Include routers
 app.include_router(health_router, prefix=settings.API_V1_PREFIX)
-app.include_router(webhook_router, prefix=settings.API_V1_PREFIX)
-app.include_router(incident_router, prefix=settings.API_V1_PREFIX)
-app.include_router(approval_router, prefix=settings.API_V1_PREFIX)
+app.include_router(webhooks_router, prefix=settings.API_V1_PREFIX)
+app.include_router(incidents_router, prefix=settings.API_V1_PREFIX)
+app.include_router(approvals_router, prefix=settings.API_V1_PREFIX)
 app.include_router(contact_router, prefix=settings.API_V1_PREFIX)
 app.include_router(license_router, prefix=settings.API_V1_PREFIX)
 app.include_router(settings_router, prefix=settings.API_V1_PREFIX)

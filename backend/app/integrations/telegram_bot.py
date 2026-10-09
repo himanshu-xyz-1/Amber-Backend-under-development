@@ -7,12 +7,13 @@ Provides long-polling interaction for on-call SREs:
 """
 
 import asyncio
-from datetime import datetime, timezone
 import html
 import json
 import logging
-from typing import Any, Dict, Optional
 import uuid
+from datetime import datetime, timezone
+from typing import Any
+
 import httpx
 from sqlalchemy.future import select
 
@@ -20,16 +21,19 @@ from backend.app.core.config import settings
 from backend.app.core.database import AsyncSessionLocal
 from backend.app.core.license import license_manager
 from backend.app.models.incident import Incident, IncidentStatus
-from backend.app.models.tool_invocation import ToolInvocation, InvocationStatus
-from backend.app.services.approval_service import execute_tool_approval, ApprovalExecutionError
+from backend.app.models.tool_invocation import InvocationStatus, ToolInvocation
+from backend.app.services.approval_service import (
+    ApprovalExecutionError,
+    execute_tool_approval,
+)
 
 logger = logging.getLogger(__name__)
 
 
-async def send_telegram_reply(token: str, chat_id: int | str, text: str, reply_markup: Optional[Dict[str, Any]] = None):
+async def send_telegram_reply(token: str, chat_id: int | str, text: str, reply_markup: dict[str, Any] | None = None):
     """Sends a markdown or HTML message back to Telegram chat."""
     api_url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "chat_id": chat_id,
         "text": text,
         "parse_mode": "HTML",
@@ -83,7 +87,7 @@ async def send_telegram_document(
     chat_id: int | str,
     filename: str,
     content: bytes,
-    caption: Optional[str] = None
+    caption: str | None = None
 ):
     """Sends a downloadable file/document directly into Telegram chat."""
     api_url = f"https://api.telegram.org/bot{token}/sendDocument"
@@ -433,9 +437,10 @@ async def handle_simulate_command(token: str, chat_id: int | str):
         return
 
     await send_telegram_reply(token, chat_id, "🚨 <i>Injecting simulated P1 Postgres Connection Pool Outage alert...</i>")
+    import hashlib
+
     from backend.app.agents.processor import process_alert_into_incident
     from backend.app.models.alert import Alert, AlertSource
-    import hashlib
 
     sim_payload = {
         "title": "PostgreSQL Connection Pool Exhausted (100% active)",
@@ -469,7 +474,7 @@ async def handle_simulate_command(token: str, chat_id: int | str):
         await send_telegram_reply(token, chat_id, f"❌ Simulation failed: {html.escape(str(e))}")
 
 
-async def handle_telegram_callback(cb: Dict[str, Any], token: str):
+async def handle_telegram_callback(cb: dict[str, Any], token: str):
     """Handles inline button clicks in Telegram."""
     cb_id = cb.get("id")
     data = cb.get("data", "")
@@ -621,7 +626,7 @@ async def handle_telegram_callback(cb: Dict[str, Any], token: str):
             await send_telegram_reply(token, chat_id, f"❌ Failed to generate audit document: {html.escape(str(e))}")
 
 
-async def handle_telegram_message(msg: Dict[str, Any], token: str):
+async def handle_telegram_message(msg: dict[str, Any], token: str):
     """Routes incoming Telegram text messages to command handlers."""
     chat_id = msg.get("chat", {}).get("id")
     text = (msg.get("text") or "").strip()
@@ -713,7 +718,7 @@ async def start_telegram_bot_polling():
 
     while True:
         try:
-            params: Dict[str, Any] = {"timeout": 20}
+            params: dict[str, Any] = {"timeout": 20}
             if offset is not None:
                 params["offset"] = offset
 
@@ -745,8 +750,8 @@ async def start_telegram_bot_polling():
         except httpx.RequestError as e:
             logger.debug(f"Telegram polling network pause: {e}")
             await asyncio.sleep(3)
-        except Exception as e:
-            logger.exception(f"Unexpected error in Telegram polling loop: {e}")
+        except Exception:
+            logger.exception("Unexpected error in Telegram polling loop")
             await asyncio.sleep(5)
 
 

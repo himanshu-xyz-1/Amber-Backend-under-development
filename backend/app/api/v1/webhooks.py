@@ -1,12 +1,13 @@
 import hashlib
-from fastapi import APIRouter, Depends, Request, BackgroundTasks
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.app.agents.processor import process_alert_into_incident
+from backend.app.auth.security import require_webhook_auth
 from backend.app.core.database import get_db
 from backend.app.models.alert import Alert, AlertSource
 from backend.app.schemas.alert import WebhookAckResponse
-from backend.app.agents.processor import process_alert_into_incident
-from backend.app.auth.security import require_webhook_auth
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 

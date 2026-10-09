@@ -14,11 +14,12 @@ Critical safety rules enforced here:
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any
 
-from backend.app.core.llm import llm_gateway, get_model_trust_level
 from backend.app.core.config import settings
+from backend.app.core.llm import get_model_trust_level, llm_gateway
 from backend.app.tools.base import tool_registry
+
 from .state import AmberGraphState
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ async def investigation_node(state: AmberGraphState) -> dict:
     # Step 1: Run live read-only diagnostic tools
     # These provide REAL cluster data — no hallucination possible here.
     # ──────────────────────────────────────────────
-    diagnostic_results: List[Dict[str, Any]] = []
+    diagnostic_results: list[dict[str, Any]] = []
 
     health_tool = tool_registry.get("check_service_health")
     if health_tool:
@@ -100,7 +101,7 @@ async def investigation_node(state: AmberGraphState) -> dict:
     # Step 3: LLM Investigation & Proposal
     # ──────────────────────────────────────────────
     root_cause = "Diagnostic probes indicate service degradation."
-    proposed_tools: List[Dict[str, Any]] = []
+    proposed_tools: list[dict[str, Any]] = []
     remediation_plan = "Review logs and execute standard service recovery."
     needs_human = False
 

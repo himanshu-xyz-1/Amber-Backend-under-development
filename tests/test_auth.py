@@ -1,7 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
-from backend.app.main import app
+
 from backend.app.core.config import settings
+from backend.app.main import app
 
 
 def test_approvals_require_auth():
@@ -47,7 +48,7 @@ def test_approvals_require_auth():
 
 
 def test_webhook_secret_verification():
-    from unittest.mock import patch, AsyncMock
+    from unittest.mock import AsyncMock, patch
     client = TestClient(app)
 
     orig_secret = settings.WEBHOOK_SECRET
@@ -81,9 +82,10 @@ def test_webhook_secret_verification():
 @pytest.mark.asyncio
 async def test_incident_soft_delete_preserves_audit_trail():
     """Verify that deleting an incident soft-deletes it (status CANCELLED) to preserve SOC2 audit trail."""
-    from backend.app.core.database import AsyncSessionLocal, Base, engine
-    from backend.app.models.incident import Incident, IncidentStatus, IncidentSeverity
     from sqlalchemy import select
+
+    from backend.app.core.database import AsyncSessionLocal, Base, engine
+    from backend.app.models.incident import Incident, IncidentSeverity, IncidentStatus
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -136,12 +138,12 @@ async def test_unregistered_approver_email_rejected_in_production(monkeypatch):
 @pytest.mark.asyncio
 async def test_per_user_api_key_authentication():
     """Verify that scoped personal user API keys authenticate against users table without master key."""
-    from backend.app.core.database import AsyncSessionLocal
-    from backend.app.models.user import User, UserRole
-    from backend.app.auth.security import hash_api_key
-
     import secrets
     import uuid
+
+    from backend.app.auth.security import hash_api_key
+    from backend.app.core.database import AsyncSessionLocal
+    from backend.app.models.user import User, UserRole
 
     # Dynamically generated mock tokens for test execution (prevents static scanner false positives)
     mock_dynamic_token = secrets.token_hex(16)

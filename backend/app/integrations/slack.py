@@ -4,7 +4,8 @@ Dispatches interactive Block Kit cards for incident triage and HITL approvals vi
 """
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
+
 import httpx
 
 from backend.app.core.config import settings
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 async def send_slack_incident_alert(
-    incident_data: Dict[str, Any],
-    tool_invocation: Optional[Dict[str, Any]] = None
+    incident_data: dict[str, Any],
+    tool_invocation: dict[str, Any] | None = None
 ) -> bool:
     """
     Sends an urgent incident notification with rich Block Kit formatting to configured Slack webhook.
@@ -149,7 +150,7 @@ async def send_slack_test_ping(
     client_name: str,
     company: str,
     tier: str = "Community"
-) -> Tuple[bool, Optional[str]]:
+) -> tuple[bool, str | None]:
     """
     Sends an immediate test ping card to verify the Slack Webhook URL during setup.
     Returns (success, error_or_message).
@@ -199,5 +200,5 @@ async def send_slack_test_ping(
             else:
                 return False, f"Slack webhook returned HTTP {resp.status_code}: {resp.text}"
     except Exception as e:
-        return False, f"Slack connection failed: {str(e)}"
+        return False, f"Slack connection failed: {e}"
 

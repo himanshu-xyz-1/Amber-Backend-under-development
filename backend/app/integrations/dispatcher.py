@@ -5,7 +5,7 @@ Coordinates concurrent broadcast of on-call incident notifications across Slack,
 
 import asyncio
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .slack import send_slack_incident_alert
 from .telegram import send_telegram_incident_alert
@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 async def dispatch_incident_notifications(
-    incident_data: Dict[str, Any],
-    tool_invocation: Optional[Dict[str, Any]] = None
-) -> Dict[str, bool]:
+    incident_data: dict[str, Any],
+    tool_invocation: dict[str, Any] | None = None
+) -> dict[str, bool]:
     """
     Broadcasts incident alerts across all configured channels concurrently.
     Returns status map of channel deliveries.

@@ -5,7 +5,8 @@ Dispatches instant on-call mobile push alerts with inline action buttons via Tel
 
 import html
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
+
 import httpx
 
 from backend.app.core.config import settings
@@ -49,8 +50,8 @@ async def register_telegram_subscriber(chat_id: int | str) -> bool:
 
 
 async def send_telegram_incident_alert(
-    incident_data: Dict[str, Any],
-    tool_invocation: Optional[Dict[str, Any]] = None
+    incident_data: dict[str, Any],
+    tool_invocation: dict[str, Any] | None = None
 ) -> bool:
     """
     Sends an immediate Telegram alert to all registered subscribers.
@@ -132,7 +133,7 @@ async def send_telegram_incident_alert(
     text_body = "\n".join(msg_lines)
     api_url = f"https://api.telegram.org/bot{token}/sendMessage"
 
-    print(f"⚡ [AMBER TELEGRAM] Dispatching alert for Incident {incident_id} to {len(subscribers)} subscriber(s)...", flush=True)
+    logger.info(f"Dispatching Telegram alert for Incident {incident_id} to {len(subscribers)} subscriber(s)")
     success_count = 0
     try:
         async with httpx.AsyncClient(timeout=6.0) as client:
@@ -147,19 +148,15 @@ async def send_telegram_incident_alert(
                     resp = await client.post(api_url, json=payload)
                     if resp.status_code == 200:
                         success_count += 1
-                        print(f"✅ [AMBER TELEGRAM] Alert delivered to chat_id {s_id} for Incident {incident_id}", flush=True)
-                        logger.info(f"Dispatched Telegram alert for Incident {incident_id} to subscriber {s_id}")
+                        logger.info(f"Telegram alert delivered to chat_id {s_id} for Incident {incident_id}")
                     else:
-                        print(f"❌ [AMBER TELEGRAM] Error sending to {s_id}: {resp.status_code} - {resp.text}", flush=True)
                         logger.warning(f"Telegram API error for subscriber {s_id}: {resp.status_code} - {resp.text}")
                 except Exception as sub_err:
-                    print(f"❌ [AMBER TELEGRAM] Delivery exception for {s_id}: {sub_err}", flush=True)
-                    logger.warning(f"Failed to deliver to subscriber {s_id}: {sub_err}")
+                    logger.warning(f"Failed to deliver Telegram alert to subscriber {s_id}: {sub_err}")
 
         return success_count > 0
     except Exception as e:
-        print(f"❌ [AMBER TELEGRAM] Top-level dispatch failure: {e}", flush=True)
-        logger.warning(f"Failed to deliver Telegram alerts: {e}")
+        logger.warning(f"Failed to dispatch Telegram alerts: {e}")
         return False
 
 
@@ -170,9 +167,9 @@ async def send_telegram_pairing_handshake(
     tier: str = "Community",
     max_nodes: int = 5,
     max_services: int = 3,
-    host_name: Optional[str] = None,
-    bot_token: Optional[str] = None
-) -> Tuple[bool, Optional[str]]:
+    host_name: str | None = None,
+    bot_token: str | None = None
+) -> tuple[bool, str | None]:
     """
     Sends an immediate pairing confirmation handshake to verify a newly connected Telegram Receiver ID.
     Returns (success, error_or_message).
@@ -218,5 +215,5 @@ async def send_telegram_pairing_handshake(
                     err_desc = resp.text
                 return False, f"Telegram API error: {err_desc}"
     except Exception as e:
-        return False, f"Connection failed: {str(e)}"
+        return False, f"Connection failed: {e}"
 

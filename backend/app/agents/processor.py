@@ -1,28 +1,33 @@
 import hashlib
 import json
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Any, Dict
 import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from sqlalchemy import select
-from backend.app.core.database import AsyncSessionLocal
-from backend.app.models.incident import Incident, IncidentSeverity, IncidentStatus
-from backend.app.models.alert import Alert
-from backend.app.models.tool_invocation import ToolInvocation, RiskLevel, InvocationStatus
+
 from backend.app.agents.graph import run_incident_graph
+from backend.app.core.database import AsyncSessionLocal
+from backend.app.models.alert import Alert
+from backend.app.models.incident import Incident, IncidentSeverity, IncidentStatus
+from backend.app.models.tool_invocation import (
+    InvocationStatus,
+    RiskLevel,
+    ToolInvocation,
+)
 from backend.app.tools.base import tool_registry
 
 logger = logging.getLogger(__name__)
 
 
-def compute_args_hash(args: Dict[str, Any]) -> str:
+def compute_args_hash(args: dict[str, Any]) -> str:
     """Computes a deterministic SHA-256 hash of sorted JSON args."""
     canonical_json = json.dumps(args, sort_keys=True)
     return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
 
-async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payload: Dict[str, Any]):
+async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payload: dict[str, Any]):
     """
     Background worker that runs the full autonomous incident lifecycle:
     1. Alert Correlation & Deduplication
@@ -30,8 +35,7 @@ async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payl
     3. Tool Invocation Creation (HITL approval token with SHA-256 binding & 10m TTL)
     """
     start_time = datetime.now(timezone.utc)
-    print(f"🚀 [AMBER SRE] Processing Alert {alert_id} from {source} into autonomous incident pipeline...", flush=True)
-    logger.info(f"Starting autonomous pipeline for Alert {alert_id} from {source}")
+    logger.info(f"Processing Alert {alert_id} from {source} into autonomous incident pipeline")
 
     try:
         async with AsyncSessionLocal() as session:
@@ -75,9 +79,10 @@ async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payl
             await session.commit()
 
             # 2.5 License Infrastructure Limit Runtime Check (30-day active window)
-            from backend.app.core.license import license_manager
-            from backend.app.core.k8s import get_cluster_node_count
             from sqlalchemy import distinct, func
+
+            from backend.app.core.k8s import get_cluster_node_count
+            from backend.app.core.license import license_manager
             
             thirty_days_ago = start_time - timedelta(days=30)
             services_count_res = await session.execute(
@@ -211,8 +216,7 @@ async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payl
                     "status": target_inv.status.value
                 }
             await dispatch_incident_notifications(inc_dict, primary_inv)
-            print(f"📡 [AMBER SRE] Incident {incident.id} [{incident.severity.value}] notification dispatch completed. Status: {incident.status.value}", flush=True)
+            logger.info(f"Incident {incident.id} [{incident.severity.value}] notification dispatch completed. Status: {incident.status.value}")
 
-    except Exception as e:
-        print(f"❌ [AMBER SRE] Autonomous pipeline error: {e}", flush=True)
-        logger.exception(f"Error in autonomous incident processing pipeline: {e}")
+    except Exception:
+        logger.exception("Error in autonomous incident processing pipeline")

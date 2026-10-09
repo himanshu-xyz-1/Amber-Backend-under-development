@@ -1,10 +1,11 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
+
+from backend.app.integrations.dispatcher import dispatch_incident_notifications
 from backend.app.integrations.slack import send_slack_incident_alert
 from backend.app.integrations.telegram import send_telegram_incident_alert
 from backend.app.integrations.whatsapp import send_whatsapp_incident_alert
-from backend.app.integrations.dispatcher import dispatch_incident_notifications
 
 
 @pytest.mark.asyncio
