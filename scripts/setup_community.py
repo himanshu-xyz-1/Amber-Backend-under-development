@@ -176,11 +176,11 @@ def main():
 
     # The Community Growth Hook (Star on GitHub)
     print(f"{YELLOW}{BOLD}⭐ Enjoying Amber Community Edition?{NC}")
-    print(f"Please consider giving us a star on GitHub: {CYAN}https://github.com/himanshu-xyz-1/Amber-Backend-under-development{NC}")
+    print(f"Please consider giving us a star on GitHub: {CYAN}https://github.com/himanshu-xyz-1/Amber-Backend{NC}")
     print(f"Opening GitHub in your browser...\n")
 
     try:
-        webbrowser.open("https://github.com/himanshu-xyz-1/Amber-Backend-under-development")
+        webbrowser.open("https://github.com/himanshu-xyz-1/Amber-Backend")
     except Exception:
         pass
 

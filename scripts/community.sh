@@ -15,7 +15,7 @@
 set -euo pipefail
 
 AMBER_DIR="${HOME}/.amber"
-REPO_URL="https://github.com/himanshu-xyz-1/Amber-Backend-under-development.git"
+REPO_URL="https://github.com/himanshu-xyz-1/Amber-Backend.git"
 
 # Colours
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'

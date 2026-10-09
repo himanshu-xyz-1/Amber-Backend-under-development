@@ -128,8 +128,8 @@ Launch all 5 containerized microservices locally or in your VPC:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/himanshu-xyz-1/Amber.git
-cd Amber
+git clone https://github.com/himanshu-xyz-1/Amber-Backend.git
+cd Amber-Backend
 
 # 2. Configure environment
 cp .env.example .env

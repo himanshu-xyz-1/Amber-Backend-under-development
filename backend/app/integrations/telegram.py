@@ -69,7 +69,7 @@ async def send_telegram_incident_alert(
     root_cause = incident_data.get("root_cause_summary") or "Automated investigation in progress."
     incident_id = incident_data.get("id", "N/A")
     dashboard_url = settings.DASHBOARD_URL
-    safe_url = dashboard_url if (dashboard_url and dashboard_url.startswith("https://")) else "https://github.com/himanshu-xyz-1/Amber-Backend-under-development"
+    safe_url = dashboard_url if (dashboard_url and dashboard_url.startswith("https://")) else "https://github.com/himanshu-xyz-1/Amber-Backend"
 
     sev_icons = {
         "P0": "🚨 <b>[P0 CRITICAL OUTAGE]</b>",

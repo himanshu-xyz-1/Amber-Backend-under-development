@@ -10,7 +10,7 @@
 set -euo pipefail
 
 AMBER_DIR="${HOME}/.amber"
-REPO_URL="https://github.com/himanshu-xyz-1/Amber-Backend-under-development.git"
+REPO_URL="https://github.com/himanshu-xyz-1/Amber-Backend.git"
 OFFLINE_BUNDLE=""
 SKIP_LLM=false
 
