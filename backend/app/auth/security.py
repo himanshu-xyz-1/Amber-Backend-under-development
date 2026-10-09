@@ -7,10 +7,10 @@ for REST endpoints, approvals, and dynamic license activation.
 import hashlib
 import hmac
 import logging
-from typing import Optional
+from typing import Optional, List
 import uuid
 
-from fastapi import HTTPException, Header, Query, Request, Security, status
+from fastapi import Depends, HTTPException, Header, Query, Request, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
@@ -197,4 +197,22 @@ async def require_webhook_auth(
         )
 
     return True
+
+
+def require_roles(allowed_roles: List[str]):
+    """
+    Enforces Role-Based Access Control (RBAC) on API routes.
+    Validates that the authenticated user possesses an allowed role.
+    Example: Depends(require_roles(["ADMIN", "LEAD", "SRE"]))
+    """
+    async def role_checker(user: AuthenticatedUser = Depends(require_api_key)) -> AuthenticatedUser:
+        normalized_allowed = [r.strip().upper() for r in allowed_roles]
+        user_role = (user.role or "").strip().upper()
+        if user_role not in normalized_allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Forbidden: Insufficient privileges. Required one of {allowed_roles}, but user role is '{user.role}'.",
+            )
+        return user
+    return role_checker
 

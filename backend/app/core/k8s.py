@@ -20,9 +20,7 @@ from backend.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_k8s_initialized: bool = False
-_core_v1_api: Optional[client.CoreV1Api] = None
-_apps_v1_api: Optional[client.AppsV1Api] = None
+_k8s_client_cache: Dict[str, Tuple[Optional[client.CoreV1Api], Optional[client.AppsV1Api]]] = {}
 
 
 class K8sExecutionError(Exception):
@@ -34,55 +32,102 @@ class K8sExecutionError(Exception):
         self.details = details or {}
 
 
-def init_k8s_client() -> Tuple[Optional[client.CoreV1Api], Optional[client.AppsV1Api]]:
+def init_k8s_client(context: Optional[str] = None) -> Tuple[Optional[client.CoreV1Api], Optional[client.AppsV1Api]]:
     """
-    Initializes and caches Kubernetes API clients.
-    Attempts:
-    1. In-cluster ServiceAccount credentials (/var/run/secrets/kubernetes.io/serviceaccount)
-    2. Local or custom KUBECONFIG file
+    Initializes and caches Kubernetes API clients for a specific cluster context.
+    Supports multi-cluster operations across distinct Kubernetes contexts.
     """
-    global _k8s_initialized, _core_v1_api, _apps_v1_api
+    global _k8s_client_cache
 
-    if _k8s_initialized:
-        return _core_v1_api, _apps_v1_api
+    cache_key = context or "__default__"
+    if cache_key in _k8s_client_cache:
+        return _k8s_client_cache[cache_key]
 
+    # 1. If explicit context specified, load that context from Kubeconfig
+    if context:
+        try:
+            kubeconfig_path = os.getenv("KUBECONFIG")
+            config.load_kube_config(config_file=kubeconfig_path, context=context)
+            logger.info(f"Kubernetes client initialized for cluster context '{context}'.")
+            core_api = client.CoreV1Api()
+            apps_api = client.AppsV1Api()
+            _k8s_client_cache[cache_key] = (core_api, apps_api)
+            return core_api, apps_api
+        except Exception as e:
+            logger.warning(f"Failed to load specific Kubernetes context '{context}': {e}")
+            _k8s_client_cache[cache_key] = (None, None)
+            return None, None
+
+    # 2. Try In-Cluster Config (standard for containerized deployment in K8s)
     try:
-        # 1. Try In-Cluster Config (standard for containerized deployment in K8s)
         config.load_incluster_config()
         logger.info("Kubernetes client initialized via in-cluster ServiceAccount.")
-        _core_v1_api = client.CoreV1Api()
-        _apps_v1_api = client.AppsV1Api()
-        _k8s_initialized = True
-        return _core_v1_api, _apps_v1_api
+        core_api = client.CoreV1Api()
+        apps_api = client.AppsV1Api()
+        _k8s_client_cache[cache_key] = (core_api, apps_api)
+        return core_api, apps_api
     except config.ConfigException:
         pass
 
+    # 3. Try Default Kubeconfig
     try:
-        # 2. Try Kubeconfig (for external/local management)
         kubeconfig_path = os.getenv("KUBECONFIG")
         config.load_kube_config(config_file=kubeconfig_path)
-        logger.info("Kubernetes client initialized via kubeconfig.")
-        _core_v1_api = client.CoreV1Api()
-        _apps_v1_api = client.AppsV1Api()
-        _k8s_initialized = True
-        return _core_v1_api, _apps_v1_api
+        logger.info("Kubernetes client initialized via default kubeconfig.")
+        core_api = client.CoreV1Api()
+        apps_api = client.AppsV1Api()
+        _k8s_client_cache[cache_key] = (core_api, apps_api)
+        return core_api, apps_api
     except Exception as e:
         logger.warning(f"No active Kubernetes cluster connection detected: {e}")
-        _k8s_initialized = True
-        _core_v1_api = None
-        _apps_v1_api = None
+        _k8s_client_cache[cache_key] = (None, None)
         return None, None
 
 
-def is_k8s_available() -> bool:
+def list_k8s_contexts() -> List[Dict[str, Any]]:
+    """
+    Returns available Kubernetes cluster contexts from the environment or Kubeconfig.
+    Allows Amber to monitor and remediate across multiple production clusters.
+    """
+    try:
+        kubeconfig_path = os.getenv("KUBECONFIG")
+        contexts, active_context = config.list_kube_config_contexts(config_file=kubeconfig_path)
+        if contexts:
+            active_name = active_context.get("name") if active_context else None
+            return [
+                {
+                    "name": ctx.get("name", "unknown"),
+                    "cluster": ctx.get("context", {}).get("cluster", "unknown"),
+                    "user": ctx.get("context", {}).get("user", "unknown"),
+                    "namespace": ctx.get("context", {}).get("namespace", "default"),
+                    "is_current": ctx.get("name") == active_name,
+                }
+                for ctx in contexts
+            ]
+    except Exception as e:
+        logger.debug(f"Could not list kubeconfig contexts: {e}")
+
+    # Fallback: In-cluster or simulated single context
+    return [
+        {
+            "name": "in-cluster",
+            "cluster": "local-kubernetes-cluster",
+            "user": "amber-serviceaccount",
+            "namespace": "default",
+            "is_current": True,
+        }
+    ]
+
+
+def is_k8s_available(context: Optional[str] = None) -> bool:
     """Returns True if a live Kubernetes API client is connected."""
-    core_api, _ = init_k8s_client()
+    core_api, _ = init_k8s_client(context=context)
     return core_api is not None
 
 
-def k8s_deployment_exists(deployment_name: str, namespace: str = "production") -> bool:
+def k8s_deployment_exists(deployment_name: str, namespace: str = "production", context: Optional[str] = None) -> bool:
     """Checks if a named Deployment actually exists in the live Kubernetes cluster."""
-    _, apps_api = init_k8s_client()
+    _, apps_api = init_k8s_client(context=context)
     if not apps_api:
         return True  # If no live cluster attached, defer to schema checks
     try:
@@ -97,9 +142,9 @@ def k8s_deployment_exists(deployment_name: str, namespace: str = "production") -
         return True
 
 
-def k8s_pod_exists(pod_name: str, namespace: str = "production") -> bool:
+def k8s_pod_exists(pod_name: str, namespace: str = "production", context: Optional[str] = None) -> bool:
     """Checks if a named Pod actually exists in the live Kubernetes cluster."""
-    core_api, _ = init_k8s_client()
+    core_api, _ = init_k8s_client(context=context)
     if not core_api:
         return True  # If no live cluster attached, defer to schema checks
     try:
@@ -114,18 +159,19 @@ def k8s_pod_exists(pod_name: str, namespace: str = "production") -> bool:
         return True
 
 
-async def k8s_restart_pod(pod_name: str, namespace: str = "default") -> Dict[str, Any]:
+async def k8s_restart_pod(pod_name: str, namespace: str = "default", context: Optional[str] = None) -> Dict[str, Any]:
     """
     Terminates a specific pod, allowing its managing ReplicaSet/Deployment to spin up a healthy replica.
     """
-    core_api, _ = init_k8s_client()
+    core_api, _ = init_k8s_client(context=context)
 
     if not core_api:
         if settings.ENVIRONMENT in ("test", "development") or os.getenv("AMBER_K8S_MOCK", "").lower() == "true":
-            logger.info(f"[TEST MOCK] Simulated restart of pod '{pod_name}' in namespace '{namespace}'")
+            logger.info(f"[TEST MOCK] Simulated restart of pod '{pod_name}' in namespace '{namespace}' (cluster '{context or 'default'}')")
             return {
                 "pod_name": pod_name,
                 "namespace": namespace,
+                "cluster_context": context or "default",
                 "action": "DELETE_POD_FOR_RESTART",
                 "status": "SIMULATED_RESTART_SUCCESS",
                 "time_to_ready_ms": 1250,
@@ -167,19 +213,20 @@ async def k8s_restart_pod(pod_name: str, namespace: str = "default") -> Dict[str
         )
 
 
-async def k8s_rollout_restart_deployment(deployment_name: str, namespace: str = "default") -> Dict[str, Any]:
+async def k8s_rollout_restart_deployment(deployment_name: str, namespace: str = "default", context: Optional[str] = None) -> Dict[str, Any]:
     """
     Executes a rolling restart of all pods in a deployment by updating the template annotation
     (exact equivalent of 'kubectl rollout restart deployment/<name>').
     """
-    _, apps_api = init_k8s_client()
+    _, apps_api = init_k8s_client(context=context)
 
     if not apps_api:
         if settings.ENVIRONMENT in ("test", "development") or os.getenv("AMBER_K8S_MOCK", "").lower() == "true":
-            logger.info(f"[TEST MOCK] Simulated rollout restart for '{deployment_name}'")
+            logger.info(f"[TEST MOCK] Simulated rollout restart for '{deployment_name}' (cluster '{context or 'default'}')")
             return {
                 "deployment_name": deployment_name,
                 "namespace": namespace,
+                "cluster_context": context or "default",
                 "action": "ROLLOUT_RESTART",
                 "status": "SIMULATED_ROLLOUT_SUCCESS",
                 "restarted_at": datetime.now(timezone.utc).isoformat()
@@ -210,6 +257,7 @@ async def k8s_rollout_restart_deployment(deployment_name: str, namespace: str = 
         return {
             "deployment_name": deployment_name,
             "namespace": namespace,
+            "cluster_context": context or "default",
             "action": "ROLLOUT_RESTART",
             "status": "ROLLOUT_RESTART_TRIGGERED",
             "generation": res.metadata.generation,
@@ -227,13 +275,14 @@ async def k8s_rollout_restart_deployment(deployment_name: str, namespace: str = 
 async def k8s_rollback_deployment(
     deployment_name: str,
     namespace: str = "default",
-    target_revision: Optional[str] = None
+    target_revision: Optional[str] = None,
+    context: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Executes an automated deployment rollback to the previous stable ReplicaSet revision
     (exact programmatic equivalent of 'kubectl rollout undo deployment/<name>').
     """
-    _, apps_api = init_k8s_client()
+    _, apps_api = init_k8s_client(context=context)
 
     if not apps_api:
         if settings.ENVIRONMENT in ("test", "development") or os.getenv("AMBER_K8S_MOCK", "").lower() == "true":
@@ -357,7 +406,8 @@ async def k8s_check_deployment_health(
     deployment_name: str,
     namespace: str = "default",
     timeout_seconds: int = 30,
-    poll_interval: float = 2.0
+    poll_interval: float = 2.0,
+    context: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Inspects live health, replica convergence, and pod readiness for a Kubernetes deployment.
@@ -367,13 +417,14 @@ async def k8s_check_deployment_health(
     import asyncio
     import time
     start_time = time.time()
-    core_api, apps_api = init_k8s_client()
+    core_api, apps_api = init_k8s_client(context=context)
 
     if not apps_api or not core_api:
         if settings.ENVIRONMENT in ("test", "development") or os.getenv("AMBER_K8S_MOCK", "").lower() == "true":
             return {
                 "deployment_name": deployment_name,
                 "namespace": namespace,
+                "cluster_context": context or "default",
                 "healthy": True,
                 "desired_replicas": 3,
                 "ready_replicas": 3,
@@ -384,6 +435,7 @@ async def k8s_check_deployment_health(
         return {
             "deployment_name": deployment_name,
             "namespace": namespace,
+            "cluster_context": context or "default",
             "healthy": False,
             "error": "Kubernetes cluster connection unavailable."
         }
@@ -407,6 +459,7 @@ async def k8s_check_deployment_health(
             last_status = {
                 "deployment_name": deployment_name,
                 "namespace": namespace,
+                "cluster_context": context or "default",
                 "healthy": is_healthy,
                 "desired_replicas": desired,
                 "ready_replicas": ready,
@@ -429,6 +482,7 @@ async def k8s_check_deployment_health(
             return {
                 "deployment_name": deployment_name,
                 "namespace": namespace,
+                "cluster_context": context or "default",
                 "healthy": False,
                 "error": f"K8s API error: {e.reason}"
             }
@@ -441,12 +495,13 @@ async def k8s_check_deployment_health(
 async def k8s_fetch_pod_logs(
     pod_name: str,
     namespace: str = "default",
-    tail_lines: int = 50
+    tail_lines: int = 50,
+    context: Optional[str] = None,
 ) -> List[str]:
     """
     Fetches real-time log stream from a container pod via the Kubernetes CoreV1 API.
     """
-    core_api, _ = init_k8s_client()
+    core_api, _ = init_k8s_client(context=context)
 
     if not core_api:
         if settings.ENVIRONMENT in ("test", "development") or os.getenv("AMBER_K8S_MOCK", "").lower() == "true":
@@ -476,10 +531,10 @@ async def k8s_fetch_pod_logs(
         )
 
 
-def get_cluster_node_count() -> int:
+def get_cluster_node_count(context: Optional[str] = None) -> int:
     """Returns the total number of worker nodes in the live Kubernetes cluster."""
     try:
-        core_api, _ = init_k8s_client()
+        core_api, _ = init_k8s_client(context=context)
         if core_api:
             nodes = core_api.list_node(timeout_seconds=2)
             return len(nodes.items)

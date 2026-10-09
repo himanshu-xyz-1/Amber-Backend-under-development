@@ -22,6 +22,12 @@ async def submit_approval(
     Executes or rejects a pending human-in-the-loop remediation tool.
     Guarded by API Key/Bearer authentication and cryptographic payload SHA-256 verification.
     """
+    if current_user.role and current_user.role.upper() in ["DEVELOPER", "VIEWER"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: Developers / Viewers cannot approve state-mutating remediation actions. Required role: SRE, LEAD, or ADMIN."
+        )
+
     try:
         invocation = await execute_tool_approval(
             tool_invocation_id=str(request.tool_invocation_id),
