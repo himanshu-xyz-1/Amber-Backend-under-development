@@ -123,7 +123,76 @@ def detect_hardware():
 
     return round(ram_gb, 1), has_gpu
 
+# Background Model Downloader Thread
+import threading
+import json
+import urllib.request
+
+class ModelPullTracker:
+    def __init__(self, model_name: str):
+        self.model_name = model_name
+        self.total = 0
+        self.completed = 0
+        self.status = "Starting..."
+        self.is_done = False
+        self.error = None
+        self._thread = threading.Thread(target=self._pull_worker, daemon=True)
+        self._thread.start()
+
+    def _pull_worker(self):
+        try:
+            req = urllib.request.Request(
+                "http://localhost:11434/api/pull",
+                data=json.dumps({"name": self.model_name, "stream": True}).encode("utf-8"),
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=3600) as response:
+                for line in response:
+                    if not line:
+                        continue
+                    try:
+                        data = json.loads(line.decode("utf-8"))
+                        self.status = data.get("status", self.status)
+                        if "total" in data and "completed" in data:
+                            self.total = data["total"]
+                            self.completed = data["completed"]
+                        if self.status == "success":
+                            self.is_done = True
+                            return
+                    except Exception:
+                        pass
+            self.is_done = True
+        except Exception as e:
+            # Fallback to subprocess ollama pull if HTTP API not directly available
+            try:
+                proc = subprocess.Popen(
+                    ["ollama", "pull", self.model_name],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True
+                )
+                for line in proc.stdout:
+                    line = line.strip()
+                    if line:
+                        self.status = line
+                proc.wait()
+                self.is_done = True
+            except Exception as ex:
+                self.error = str(ex)
+                self.is_done = True
+
+    def get_progress(self):
+        if self.is_done:
+            return 100.0, "Ready", self.completed, self.total
+        if self.total > 0:
+            pct = round((self.completed / self.total) * 100, 1)
+            return pct, self.status, self.completed, self.total
+        return 0.0, self.status, 0, 0
+
+_active_model_tracker = None
+
 def setup_ollama_hardware_aware(env_path):
+    global _active_model_tracker
     print(f"{BOLD}3. Local AI Engine & Hardware-Aware Model Selection{NC}")
     ram_gb, has_gpu = detect_hardware()
     gpu_label = f"NVIDIA GPU Detected" if has_gpu else "CPU-only"
@@ -160,7 +229,14 @@ def setup_ollama_hardware_aware(env_path):
         selected_model = model1
 
     set_key(str(env_path), "LOCAL_LLM_MODEL", selected_model)
-    print(f"  {GREEN}✔ Configured Local LLM: {selected_model}{NC}\n")
+    print(f"  {GREEN}✔ Configured Local LLM: {selected_model}{NC}")
+    print(f"  {CYAN}⚡ Background download started for {selected_model}... (Continuing setup while it downloads){NC}\n")
+    
+    try:
+        _active_model_tracker = ModelPullTracker(selected_model)
+    except Exception as e:
+        print(f"  {YELLOW}⚠ Could not start background download automatically: {e}{NC}")
+
 
 def setup_cloud_ai(env_path):
     print(f"{BOLD}4. Optional Cloud AI Reasoning (Claude & GPT-4o Fallback){NC}")
@@ -374,6 +450,26 @@ def main():
     setup_cloud_ai(env_path)
     setup_notifications(env_path)
     select_monitoring_stack(webhook_secret)
+
+    # Display Model Download Status
+    if _active_model_tracker:
+        print(f"{CYAN}{BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{NC}")
+        print(f"{BOLD}🧠 LOCAL AI MODEL STATUS ({_active_model_tracker.model_name}):{NC}")
+        pct, status, completed, total = _active_model_tracker.get_progress()
+        if _active_model_tracker.is_done:
+            print(f"  {GREEN}✔ Model is fully downloaded and ready for offline reasoning.{NC}")
+        else:
+            if total > 0:
+                mb_done = round(completed / (1024 * 1024), 1)
+                mb_total = round(total / (1024 * 1024), 1)
+                bar_len = 30
+                filled = int(round(bar_len * (completed / total)))
+                bar = "█" * filled + "░" * (bar_len - filled)
+                print(f"  Progress: [{bar}] {pct}% ({mb_done}MB / {mb_total}MB)")
+            else:
+                print(f"  Status: {status}")
+            print(f"  {DIM}Downloading in background. The cluster will start now and load the model when ready.{NC}")
+        print(f"{CYAN}{BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{NC}\n")
 
     print(f"{GREEN}{BOLD}======================================================================{NC}")
     print(f"{GREEN}{BOLD}  ✔ AMBER ENTERPRISE ENGINE ONBOARDING COMPLETE!{NC}")
