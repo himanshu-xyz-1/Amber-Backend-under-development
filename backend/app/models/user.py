@@ -20,7 +20,7 @@ class UserRole(enum.Enum):
 class User(Base):
     """
     SRE & Machine Service Identity model.
-    Binds on-call SREs to their verified Slack, WhatsApp, and Telegram notification handles
+    Binds on-call SREs to their verified Slack, and Telegram notification handles
     with scoped API keys for programmatic automation.
     """
     __tablename__ = "users"
@@ -31,7 +31,6 @@ class User(Base):
     role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.SRE)
     api_key_hash = Column(String(255), nullable=True)
     slack_user_id = Column(String(100), nullable=True)
-    whatsapp_phone = Column(String(50), nullable=True)
     telegram_handle = Column(String(100), nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

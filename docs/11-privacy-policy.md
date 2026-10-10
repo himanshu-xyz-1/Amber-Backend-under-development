@@ -52,7 +52,6 @@ Amber collects and processes only the minimum data required to triage, investiga
 - **Agent Execution State**: LangGraph state machine steps, tool call parameters, verification health check statuses, and human-in-the-loop (HITL) approval records.
 
 ### 2.4. Account & Authentication Metadata
-- **Service & User Identities**: SRE business email address, scoped API key hashes, verified communication handles (`slack_user_id`, `whatsapp_phone`, `@telegram_handle`), and assigned RBAC roles (`SRE`, `LEAD`, `DEVELOPER`, `ADMIN`).
 - **Cryptographic Audit Trails**: Webhook source HMAC secrets, single-use HITL approval tokens, IP addresses of approvers, and SHA-256 payload binding signatures.
 
 ---

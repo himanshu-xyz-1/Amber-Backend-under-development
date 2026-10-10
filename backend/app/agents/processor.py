@@ -191,7 +191,7 @@ async def process_alert_into_incident(alert_id: uuid.UUID, source: str, raw_payl
             await session.commit()
             logger.info(f"Autonomous incident pipeline completed for Incident {incident.id} with status {incident.status.value}")
 
-            # 6. Multi-Channel On-Call Alert Broadcast (Slack, Telegram, WhatsApp)
+            # 6. Multi-Channel On-Call Alert Broadcast (Slack, Telegram)
             from backend.app.integrations import dispatch_incident_notifications
             inc_dict = {
                 "id": str(incident.id),

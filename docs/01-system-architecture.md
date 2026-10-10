@@ -23,7 +23,6 @@ Amber acts as an intelligent overlay on top of existing observability tools, exe
 +-------------------+           +---------v------------------v---------+       +-------------------------+
 | OBSERVABILITY     | Webhooks  |                                      |       |  OMNI-CHANNEL HITL      |
 | PagerDuty, Sentry,+----------->        amber-backend (FastAPI :8000)  <------->  ├── Slack Block Kit    |
-| Datadog, Prom.    | (<50ms)   |        REST API Gateway Layer        |       |  ├── WhatsApp QR Bridge |
 +-------------------+           +------------------+-------------------+       |  └── Telegram Bot       |
                                                    |                           +-------------------------+
                                 +------------------v-------------------+
@@ -56,7 +55,6 @@ Amber acts as an intelligent overlay on top of existing observability tools, exe
                         │                                                     │
                         ▼                                                     ▼
         +-------------------------------+                     +-------------------------------+
-        |     amber-telegram-bot        |                     |     amber-whatsapp-bridge     |
         |  (Dedicated Polling Worker)   |                     |    (Node.js Baileys :3001)    |
         |      @ambersre_alert_bot      |                     |    Live Web QR Auth Session   |
         +---------------+---------------+                     +---------------+---------------+
@@ -113,8 +111,6 @@ A standalone Python container running an isolated `Application.builder()` pollin
 - **Commands:** `/status`, `/incidents`, `/pending`, `/approve <id>`, `/reject <id>`, `/simulate`.
 - **1-Click Approvals:** Dispatches inline button callbacks (`callback_data="approve:<id>"`) directly to on-call mobile devices.
 
-### 7. Self-Hosted WhatsApp QR Bridge (`amber-whatsapp-bridge` :3001)
-A Node.js microservice utilizing `@whiskeysockets/baileys` to connect Amber to WhatsApp without expensive third-party Twilio per-message fees.
 - Provides a web QR authentication endpoint (`GET /`).
 - Health status check (`GET /status`).
 - HTTP alert dispatch endpoint (`POST /send-alert`).
@@ -147,7 +143,6 @@ React 19 + TypeScript Single Page Application deployed on Cloudflare Workers edg
 7. **Omni-Channel Dispatch:** The dispatcher broadcasts the proposal simultaneously to:
    - Slack (Block Kit card with Deep Proof).
    - Telegram (`@ambersre_alert_bot` with inline `[Approve]` and `[Reject]` buttons).
-   - WhatsApp (Baileys bridge message with quick approval links).
    - Web Dashboard (`https://ambersre.xyz`).
 8. **Human Approval:** The SRE Lead clicks `[Approve]` on Telegram.
 9. **Execution & State Resolution:** `ApprovalService` verifies the SHA-256 payload hash and TTL, executes the tool, verifies connection pool recovery, and transitions the incident to `RESOLVED`.
@@ -164,6 +159,5 @@ React 19 + TypeScript Single Page Application deployed on Cloudflare Workers edg
 | **Primary Database** | PostgreSQL 16 + pgvector | ACID compliance, JSONB support, and embedded vector search in a single database. | Pinecone/Weaviate (Split-brain sync issues, external data egress). |
 | **Event Queue** | Redis 7 Streams | Ultra-fast memory-based append-only log, handles 500 alerts/sec with zero packet loss. | Kafka (Too heavyweight for single-tenant VPC). |
 | **Telegram Bot** | python-telegram-bot | Decoupled standalone polling worker, eliminates multi-worker 409 conflict. | Webhook-based (Requires public domain mapping for local bots). |
-| **WhatsApp Bridge** | Baileys (Node.js) | Self-hosted WhatsApp Web session, zero per-message cost, fully in-VPC. | Twilio API ($0.05/msg, data leaves customer perimeter). |
 | **Frontend Edge** | React 19 + Cloudflare Workers | Instant global edge CDN, zero-cost static hosting, universal SSL. | Vercel (Higher cold starts, custom domain setup). |
 | **Production Domain** | ambersre.xyz | Dedicated official domain with Google Trust Services SSL. | Mock staging domains. |

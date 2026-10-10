@@ -38,24 +38,6 @@ services:
     networks:
       - amber-network
 
-  whatsapp-bridge:
-    build:
-      context: ./services/whatsapp-bridge
-      dockerfile: Dockerfile
-    image: amber-whatsapp-bridge:latest
-    container_name: amber-whatsapp-bridge
-    restart: unless-stopped
-    ports:
-      - "3001:3001"
-    volumes:
-      - whatsapp_sessions:/app/sessions
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://localhost:3001/status || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - amber-network
 
   # ──────────────────────────────────────────────────────────────────────
   # Ollama — Universal Local LLM Engine (The Lego Brain Socket)
@@ -112,15 +94,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      whatsapp-bridge:
-        condition: service_started
       ollama:
         condition: service_started
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-amber}:${POSTGRES_PASSWORD:-amber_secure_password}@postgres:5432/${POSTGRES_DB:-amber_db}
       - REDIS_URL=redis://redis:6379/0
       - REDIS_ENABLED=true
-      - WHATSAPP_BRIDGE_URL=http://whatsapp-bridge:3001
       - LOCAL_LLM_ENDPOINT=http://ollama:11434/v1
       - ENVIRONMENT=production
       - HOST=0.0.0.0
@@ -165,7 +144,6 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  whatsapp_sessions:
   ollama_models:    # Persistent model storage — models survive container restarts
 
 networks:

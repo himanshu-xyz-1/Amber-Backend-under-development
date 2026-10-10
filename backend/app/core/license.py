@@ -153,7 +153,7 @@ class LicenseManager:
 
     def is_feature_enabled(self, feature: str) -> bool:
         """
-        Check if a specific capability (e.g. 'telegram_bot', 'whatsapp_bridge', 'slack_approvals') is unlocked.
+        Check if a specific capability (e.g. 'telegram_bot', 'slack_approvals') is unlocked.
         """
         if not self.is_valid:
             return False
@@ -195,7 +195,7 @@ class LicenseManager:
             print(f"💎 AMBER ENTERPRISE ACTIVE: Licensed to '{self.org}'")
             print(f"📦 Tier: {self.tier.upper()} | Limit: {self.max_nodes} Nodes, {self.max_services} Services")
             print(f"⏳ Validity: {self.days_remaining} Days Remaining (Expires {self.expires_at.strftime('%Y-%m-%d')})")
-            print("⚡ Multi-Channel Engine: Slack, Telegram, WhatsApp & HITL Approvals UNLOCKED")
+            print("⚡ Multi-Channel Engine: Slack, Telegram & HITL Approvals UNLOCKED")
             print("=" * 70 + "\n")
         else:
             print("\n" + "=" * 70)

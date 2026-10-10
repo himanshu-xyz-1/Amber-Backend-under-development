@@ -55,7 +55,6 @@ def upgrade() -> None:
     sa.Column('role', sa.Enum('SRE', 'LEAD', 'DEVELOPER', 'ADMIN', name='userrole'), nullable=False),
     sa.Column('api_key_hash', sa.String(length=255), nullable=True),
     sa.Column('slack_user_id', sa.String(length=100), nullable=True),
-    sa.Column('whatsapp_phone', sa.String(length=50), nullable=True),
     sa.Column('telegram_handle', sa.String(length=100), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),

@@ -48,7 +48,6 @@ Amber is engineered as a resilient, single-tenant, in-VPC multi-container cluste
 | **LLM Inference** | **Ollama / vLLM / Cloud APIs** | **Air-gapped local-first inference** via Ollama (Qwen 2.5 Coder, Llama 3.3) or BYOK cloud APIs (Claude 3.7 Sonnet, GPT-4o, Gemini 2.5 Flash). |
 | **Database & Audit Store** | **SQLite (Embedded Zero-Config Default)** | Embedded SQLite (`amber.db`) requiring **0 database installation or external setup**. Auto-creates schema on boot. Optional PostgreSQL for enterprise multi-container deployments. |
 | **Mobile HITL Mesh** | **Dedicated Python Bot Worker** | Singleton worker polling `@ambersre_alert_bot`, delivering 1-click inline mobile approvals (`approve:<id>` / `reject:<id>`). |
-| **WhatsApp Bridge** | **Node.js 20 + `@whiskeysockets/baileys`** | Self-hosted QR socket bridge (`:3001`) with zero third-party per-message SMS costs. |
 | **Slack Integration** | **Slack Block Kit + Deep Proof** | Rich interactive incident triage cards with diagnostic diffs and expandable proof modals. |
 | **Web Edge Dashboard** | **React 19 + Vite + Tailwind + Framer Motion** | Global edge-rendered console on Cloudflare Workers with cryptographic HMAC verification inspection. |
 
@@ -83,7 +82,7 @@ Amber is engineered as a resilient, single-tenant, in-VPC multi-container cluste
 
 1. **Ingest & Fingerprint (`<80ms`):** Ingests webhook storms from Datadog, Prometheus, or PagerDuty, groups cascading alert noise via sliding-window hash deduplication, and creates a unified incident context.
 2. **Safe Real-Cluster Diagnosis (`<3s`):** Queries live Kubernetes container events, Prometheus metrics, and Postgres connection states using strictly read-only allowlisted diagnostic probes.
-3. **Sovereign Human Approval (10m TTL):** If a high-risk mutation is required (e.g., rolling back a bad deployment or terminating hanging queries), Amber generates a SHA-256 bound card dispatched to **Telegram, WhatsApp, Slack, and Web**.
+3. **Sovereign Human Approval (10m TTL):** If a high-risk mutation is required (e.g., rolling back a bad deployment or terminating hanging queries), Amber generates a SHA-256 bound card dispatched to **Telegram, Slack, and Web**.
 4. **Verified Recovery & Post-Mortem:** Executes allowlisted fix, polls cluster readiness probes for 45s to verify health convergence, automatically rolls back if health probes fail, and compiles an audit-ready Markdown post-mortem.
 
 ---
@@ -102,7 +101,6 @@ Amber is engineered as a resilient, single-tenant, in-VPC multi-container cluste
   - `/approve <id>` — Cryptographically sign and execute an action.
   - `/reject <id>` — Dismiss action and halt execution.
   - `/simulate` — Trigger an instant P0 connection pool saturation simulation.
-- **WhatsApp Bridge (`:3001`):** Native Baileys WebSocket QR bridge providing zero-cost WhatsApp alerts and mobile tap approvals.
 - **Slack Block Kit:** Interactive cards with deep proof drawers, live diagnostic diffs, and audit logging.
 
 ---
@@ -148,7 +146,7 @@ NAME                     IMAGE                  STATUS
 amber-postgres           pgvector/pgvector:pg16 Up (healthy)   0.0.0.0:5432->5432/tcp
 amber-redis              redis:7-alpine         Up (healthy)   0.0.0.0:6379->6379/tcp
 amber-backend            amber-backend          Up (healthy)   0.0.0.0:8000->8000/tcp
-amber-whatsapp-bridge    whatsapp-bridge        Up (healthy)   0.0.0.0:3001->3001/tcp
+
 amber-telegram-bot       amber-backend          Up             (polling @ambersre_alert_bot)
 ```
 
@@ -186,7 +184,7 @@ python scripts/setup_wizard.py
 | **Deadlock & OOM Tracing** | Memory leak & pool tracing | Memory leak & pool tracing | Memory leak & pool tracing |
 | **Built-in SRE Runbooks** | **50+ Standard Runbooks** | 50+ Standard + 5 Tailored Runbooks | Full White-Glove Runbook Engineering |
 | **Automated Remediations** | Read-Only Probes + Manual Review | **100 Included Mutating Actions/mo** | **500 High-Volume Actions/mo** |
-| **HITL Approvals** | Telegram & Web | **Telegram, WhatsApp, Slack & Web** | Multi-Workspace Omni-Channel |
+| **HITL Approvals** | Telegram & Web | **Telegram, Slack & Web** | Multi-Workspace Omni-Channel |
 | **Incident Bridge Escalation** | Community GitHub / Discord | Standard Email & Slack Support | **< 15-min SLA with Amber Principal SRE** |
 | **License Requirement** | **$0 (Zero Key Required)** | Offline Ed25519 Signed License | Custom Dedicated VPC Contract |
 

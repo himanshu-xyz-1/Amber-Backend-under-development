@@ -47,7 +47,6 @@ erDiagram
 
 ### Table Definitions
 
-*   **`users`**: `id` (UUID, PK), `email` (VARCHAR, Unique), `api_key_hash` (VARCHAR), `role` (ENUM: admin, lead, sre, dev), `slack_user_id` (VARCHAR), `whatsapp_phone` (VARCHAR), `org_id` (UUID, FK), `created_at` (TIMESTAMPTZ)
 *   **`organizations`**: `id` (UUID, PK), `name` (VARCHAR), `plan_tier` (ENUM: starter, pro, enterprise), `stripe_customer_id` (VARCHAR)
 *   **`alert_sources`**: `id` (UUID, PK), `org_id` (UUID, FK), `source_type` (VARCHAR), `webhook_secret` (VARCHAR), `config` (JSONB)
 *   **`incidents`**: `id` (UUID, PK), `org_id` (UUID, FK), `fingerprint` (VARCHAR), `severity` (ENUM), `status` (ENUM: open, investigating, resolving, closed), `created_at` (TIMESTAMPTZ), `resolved_at` (TIMESTAMPTZ), `ttd` (INTERVAL), `ttr` (INTERVAL)

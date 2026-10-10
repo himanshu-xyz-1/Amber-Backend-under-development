@@ -19,10 +19,8 @@ Start with the PRD, then follow the numbered sequence. Each document is self-con
 | # | Document | What It Covers |
 |---|----------|----------------|
 | — | [PRD.md](./PRD.md) | Product Requirements — problem statement, use cases, functional requirements, NFRs, safety specification, rollout phases |
-| 01 | [System Architecture](./01-system-architecture.md) | Overall system topology, 5-container microservices, decoupled Telegram worker, WhatsApp bridge, data flow, failure modes, security boundaries |
 | 02 | [Database Design](./02-database-design.md) | PostgreSQL + pgvector + Redis selection rationale, full schema design with ER diagram, indexing strategy, connection pooling, migrations, Redis key patterns, backup & DR, data retention |
 | 03 | [Security & Token Architecture](./03-security-and-token-architecture.md) | Zero-trust token model, inbound webhook HMAC-SHA256 verification, single-use HITL tokens (SHA-256 bound, 10m TTL), RBAC & service IAM, threat model |
-| 04 | [HITL Permission & Verification](./04-hitl-permission-system.md) | Unified Approval Service, omni-channel dispatch (Slack/WhatsApp/Telegram), 1-click mobile approvals, automated health verification probes, instant auto-rollback |
 | 05 | [Rate Limiter](./05-rate-limiter.md) | Algorithm selection (sliding window + token bucket), 3-layer rate limiting, Redis implementation design, rate limit tiers, webhook ingestion control, LLM API rate management, DDoS protection |
 | 06 | [Scalability](./06-scalability.md) | Horizontal scaling strategy, auto-scaling triggers, bottleneck analysis, LLM API scaling & fallback chains, capacity planning (10/100/1000 incidents/day), caching, cost optimization |
 | 07 | [Version Control](./07-version-control.md) | Monorepo strategy, trunk-based development, commit conventions, PR process, protected branches, CODEOWNERS, release management, environment mapping |
@@ -41,7 +39,6 @@ Start with the PRD, then follow the numbered sequence. Each document is self-con
 | Backend API | FastAPI + Async SQLAlchemy | [01 Architecture](./01-system-architecture.md) |
 | Agent Orchestration | LangGraph StateGraph | [01 Architecture](./01-system-architecture.md) |
 | Telegram SRE Bot | Python python-telegram-bot (dedicated polling container) | [01 Architecture](./01-system-architecture.md) |
-| WhatsApp Bridge | Node.js + @whiskeysockets/baileys QR Bridge (:3001) | [04 HITL](./04-hitl-permission-system.md) |
 | Primary Database | PostgreSQL 16 | [02 Database](./02-database-design.md) |
 | Vector Store | pgvector extension | [02 Database](./02-database-design.md) |
 | Event Queue / Cache | Redis 7 Streams | [02 Database](./02-database-design.md) |

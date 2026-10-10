@@ -60,16 +60,18 @@ def verify_license(env_path):
     print(f"{BOLD}2. Enterprise License & Organization Verification{NC}")
     print(f"  {DIM}Your license key was provided in your enterprise order confirmation.{NC}\n")
 
-    company_name = input(f"  Enter Organization / Company Name: ").strip()
-    if not company_name:
+    while True:
+        company_name = input(f"  Enter Organization / Company Name: ").strip()
+        if company_name:
+            break
         print(f"\n{RED}❌ Organization name is required.{NC}\n")
-        sys.exit(1)
 
-    license_key = input(f"  Enter Commercial License Key (ey...): ").strip()
-    if not license_key:
+    while True:
+        license_key = input(f"  Enter Commercial License Key (ey...): ").strip()
+        if license_key:
+            break
         print(f"\n{RED}❌ License key is mandatory for Amber Enterprise.{NC}")
         print(f"To use the free community version, run: {BOLD}./amber community{NC}\n")
-        sys.exit(1)
 
     # Clean any accidental env prefix e.g. AMBER_LICENSE_KEY=amb_live_...
     if "=" in license_key:
@@ -165,6 +167,7 @@ class ModelPullTracker:
         except Exception as e:
             # Fallback to subprocess ollama pull if HTTP API not directly available
             try:
+                import re
                 proc = subprocess.Popen(
                     ["ollama", "pull", self.model_name],
                     stdout=subprocess.PIPE,
@@ -174,6 +177,11 @@ class ModelPullTracker:
                 for line in proc.stdout:
                     line = line.strip()
                     if line:
+                        # Extract percentage if present e.g. "pulling... 45%"
+                        match = re.search(r'(\d+)%', line)
+                        if match:
+                            self.total = 100
+                            self.completed = int(match.group(1))
                         self.status = line
                 proc.wait()
                 self.is_done = True
@@ -266,45 +274,14 @@ def setup_cloud_ai(env_path):
         set_key(str(env_path), "AIR_GAPPED", "true")
         print(f"  {GREEN}✔ Air-Gapped Mode Enabled (Zero external LLM API calls).{NC}\n")
 
-def print_whatsapp_qr():
-    # Renders an ASCII simulated pairing QR block for terminal display
-    print(f"\n  {BOLD}{CYAN}=== WHATSAPP WEB BRIDGE LINKING ==={NC}")
-    print(f"  {DIM}Open WhatsApp on your phone -> Settings -> Linked Devices -> Link a Device:{NC}\n")
-    
-    qr_ascii = [
-        "  ██████████████  ██    ██████████████",
-        "  ██          ██  ████  ██          ██",
-        "  ██  ██████  ██  ██    ██  ██████  ██",
-        "  ██  ██████  ██  ████  ██  ██████  ██",
-        "  ██  ██████  ██    ██  ██  ██████  ██",
-        "  ██          ██  ████  ██          ██",
-        "  ██████████████  ██  ████████████████",
-        "                  ██                  ",
-        "  ████  ████  ████████████████  ████  ",
-        "  ██    ██  ████  ██  ██  ████    ██  ",
-        "  ██████  ██  ████████████  ████  ██  ",
-        "                  ██    ██            ",
-        "  ██████████████  ████    ██  ██████  ",
-        "  ██          ██  ████████  ██    ██  ",
-        "  ██  ██████  ██    ██  ████  ██  ██  ",
-        "  ██  ██████  ██  ████  ████████████  ",
-        "  ██  ██████  ██    ██    ██  ██      ",
-        "  ██          ██  ████████████████    ",
-        "  ██████████████    ██    ██    ████  "
-    ]
-    for row in qr_ascii:
-        print(f"{CYAN}{row}{NC}")
-    print(f"\n  {GREEN}✔ WhatsApp bridge ready. Incoming P0 alerts will route to linked group.{NC}\n")
-
 def setup_notifications(env_path):
     print(f"{BOLD}5. Multi-Channel Alert & Approval Setup{NC}")
     print("  Where do you want to receive on-call alerts & incident approvals?")
-    print("  (Enter numbers separated by comma, e.g. 1,2,3 or press Enter for Slack only):")
+    print("  (Enter numbers separated by comma, e.g. 1,2 or press Enter for Slack only):")
     print("    1) Slack (Interactive approval buttons)")
     print("    2) Telegram (Instant mobile push bot)")
-    print("    3) WhatsApp (Executive on-call bridge with terminal QR)")
 
-    ch = input("\n  Select channels [1-3] (default: 1): ").strip() or "1"
+    ch = input("\n  Select channels [1-2] (default: 1): ").strip() or "1"
     selected = [x.strip() for x in ch.split(",") if x.strip()]
 
     # 1. Slack
@@ -338,31 +315,26 @@ def setup_notifications(env_path):
             
             # Send immediate handshake test
             try:
-                import httpx
-                resp = httpx.post(
+                import urllib.request
+                import urllib.parse
+                import json
+                
+                req = urllib.request.Request(
                     f"https://api.telegram.org/bot{AMBER_OFFICIAL_TG_TOKEN}/sendMessage",
-                    json={
+                    data=json.dumps({
                         "chat_id": tg_chat,
                         "text": f"⚡ <b>AMBER SRE — ON-CALL PAIRING VERIFIED!</b>\n\n"
                                 f"🏢 <b>Organization:</b> {get_key(str(env_path), 'ORGANIZATION_NAME') or 'Enterprise'}\n"
                                 f"🔒 <b>Device Status:</b> Successfully paired for real-time P0 incident triage & 1-click approvals.",
                         "parse_mode": "HTML"
-                    },
-                    timeout=5.0
+                    }).encode("utf-8"),
+                    headers={"Content-Type": "application/json"}
                 )
-                if resp.status_code == 200:
-                    print(f"    {GREEN}✔ Immediate verification ping sent to your Telegram!{NC}")
+                with urllib.request.urlopen(req, timeout=5.0) as resp:
+                    if resp.status == 200:
+                        print(f"    {GREEN}✔ Immediate verification ping sent to your Telegram!{NC}")
             except Exception:
                 pass
-
-    # 3. WhatsApp
-    if "3" in selected:
-        print(f"\n  {BOLD}▶ WHATSAPP SETUP:{NC}")
-        print_whatsapp_qr()
-        wa_target = input("    Enter WhatsApp target group/phone (e.g. 120363413128372250@g.us): ").strip()
-        if wa_target:
-            set_key(str(env_path), "WHATSAPP_ALERT_TO", wa_target)
-            set_key(str(env_path), "WHATSAPP_BRIDGE_URL", "http://localhost:3001")
 
     print("")
 

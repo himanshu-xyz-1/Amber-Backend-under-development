@@ -85,11 +85,6 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str | None = None
     TELEGRAM_CHAT_ID: str | None = None
     TELEGRAM_ADMIN_CHAT_IDS: str | None = None  # Comma-separated admin chat IDs authorized to approve/reject
-    TWILIO_ACCOUNT_SID: str | None = None
-    TWILIO_AUTH_TOKEN: str | None = None
-    TWILIO_WHATSAPP_FROM: str | None = None  # e.g., "whatsapp:+14155238886"
-    WHATSAPP_ALERT_TO: str | None = None     # e.g., "919876543210" or "whatsapp:+919876543210"
-    WHATSAPP_BRIDGE_URL: str | None = None   # e.g., "http://localhost:3001" for self-hosted QR bridge
     DASHBOARD_URL: str = "https://ambersre.xyz"
     GMAIL_USER: str = "amber.incident@gmail.com"
     GMAIL_APP_PASSWORD: str | None = None

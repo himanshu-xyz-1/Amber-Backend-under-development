@@ -35,7 +35,7 @@ def _issue_test_token(org: str, tier: str, days: int, custom_nodes: int = 100, c
         "tier": tier,
         "max_nodes": custom_nodes,
         "max_services": custom_services,
-        "features": ["triage", "root_cause_analysis", "post_mortem", "slack_approvals", "telegram_bot", "whatsapp_bridge", "auto_remediation", "hitl_sha256"],
+        "features": ["triage", "root_cause_analysis", "post_mortem", "slack_approvals", "telegram_bot", ""auto_remediation", "hitl_sha256"],
         "issued_at": now.isoformat(),
         "expires_at": expires.isoformat(),
         "issuer": "Amber Test CI"
@@ -62,7 +62,7 @@ def test_valid_enterprise_license_verification():
     assert manager.tier == "autonomous"
     assert manager.max_nodes == 250
     assert manager.is_feature_enabled("telegram_bot") is True
-    assert manager.is_feature_enabled("whatsapp_bridge") is True
+    assert manager.is_feature_enabled("") is True
     assert manager.is_feature_enabled("slack_approvals") is True
     assert manager.days_remaining >= 29
 
@@ -92,7 +92,7 @@ def test_community_mode_when_no_token():
     assert manager.status == "community"
     assert manager.tier == "community"
     assert manager.is_feature_enabled("slack_approvals") is False
-    assert manager.is_feature_enabled("whatsapp_bridge") is False
+    assert manager.is_feature_enabled("") is False
     assert manager.is_feature_enabled("telegram_bot") is False
 
 

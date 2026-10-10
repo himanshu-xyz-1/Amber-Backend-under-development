@@ -5,7 +5,6 @@ import pytest
 from backend.app.integrations.dispatcher import dispatch_incident_notifications
 from backend.app.integrations.slack import send_slack_incident_alert
 from backend.app.integrations.telegram import send_telegram_incident_alert
-from backend.app.integrations.whatsapp import send_whatsapp_incident_alert
 
 
 @pytest.mark.asyncio
@@ -25,12 +24,6 @@ async def test_telegram_notification_graceful_skip_when_unconfigured():
 
 
 @pytest.mark.asyncio
-async def test_whatsapp_notification_graceful_skip_when_unconfigured():
-    # When Twilio/Bridge credentials are None, should return False gracefully
-    with patch("backend.app.integrations.whatsapp.settings.WHATSAPP_BRIDGE_URL", None), \
-         patch("backend.app.integrations.whatsapp.settings.TWILIO_ACCOUNT_SID", None):
-        result = await send_whatsapp_incident_alert({"title": "Test Alert", "severity": "P1"})
-        assert result is False
 
 
 @pytest.mark.asyncio
@@ -55,4 +48,4 @@ async def test_multi_channel_dispatcher_execution():
     assert isinstance(status, dict)
     assert "slack" in status
     assert "telegram" in status
-    assert "whatsapp" in status
+    assert "telegram" in status

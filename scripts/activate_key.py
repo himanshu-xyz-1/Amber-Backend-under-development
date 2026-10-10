@@ -45,13 +45,13 @@ def show_status():
         print(f"💎 AMBER ENTERPRISE ACTIVE: Licensed to '{details['org']}'")
         print(f"📦 Tier: {details['tier']} | Limit: {details['max_nodes']} Nodes, {details['max_services']} Services")
         print(f"⏳ Days Remaining: {details['days_remaining']} (Expires: {details['expires_at'][:10]})")
-        print("⚡ Multi-Channel Engine: Slack, Telegram, WhatsApp & HITL Approvals UNLOCKED")
+        print("⚡ Multi-Channel Engine: Slack, Telegram & HITL Approvals UNLOCKED")
         print("=" * 68 + "\n")
     else:
         print("\n" + "=" * 68)
         print("⚠️  AMBER COMMUNITY EDITION")
         print(f"ℹ️  Status: {details['error_message']}")
-        print("🔒 Multi-Channel Notifications (Slack, Telegram, WhatsApp) are LOCKED.")
+        print("🔒 Multi-Channel Notifications (Slack, Telegram) are LOCKED.")
         print(f"👉 GET YOUR KEY: {DEFAULT_CONTACT_URL}")
         print("=" * 68 + "\n")
 
@@ -74,7 +74,7 @@ def activate_key(token: str) -> bool:
     print(f"📦 Plan Tier    : {validator.tier.upper()}")
     print(f"💻 Node Quota   : {validator.max_nodes} Nodes")
     print(f"⏳ Valid For    : {validator.days_remaining} Days (Expires {validator.expires_at.strftime('%Y-%m-%d')})")
-    print("🚀 All Multi-Channel SRE Bridges (Slack, Telegram, WhatsApp) are now active!")
+    print("🚀 All Multi-Channel SRE Bridges (Slack, Telegram) are now active!")
     print("=" * 68 + "\n")
     return True
 

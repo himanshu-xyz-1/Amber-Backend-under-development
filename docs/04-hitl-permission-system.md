@@ -7,7 +7,6 @@ Amber eliminates the need for on-call engineers to wake up, open laptops, authen
 Amber operates on a **Governed Autonomous Model**:
 1. **AI Proposes Diagnostics & Fixes:** Agents cluster alert storms, run read-only diagnostics, and generate the exact minimal-blast-radius remediation action.
 2. **Deterministic Code Decides Safety:** Mutating actions (`HIGH` risk) are cryptographically signed into single-use approval tokens.
-3. **Omni-Channel Human Confirmation:** The incident proof and 1-click approval buttons are dispatched simultaneously to the on-call engineer's mobile device (Telegram, WhatsApp, Slack, Web Dashboard).
 4. **Instant Verification & Auto-Rollback:** Once confirmed, Amber executes the action inside the VPC, runs automated health verification probes, and auto-rolls back if metrics don't recover in ≤ 5 seconds.
 
 ```mermaid
@@ -15,7 +14,6 @@ sequenceDiagram
     participant Alert as Monitoring (Datadog/PagerDuty)
     participant Amber as Amber Ingestion & LangGraph
     participant Appr as Unified ApprovalService
-    participant SRE as On-Call SRE (Telegram / WhatsApp / Slack)
     participant VPC as Target Cloud Cluster
 
     Alert->>Amber: Ingest Alert Storm (500 alerts/sec)
@@ -24,7 +22,6 @@ sequenceDiagram
     Amber->>SRE: Dispatch Omni-Channel 1-Click Card (TTL: 10m)
     
     Note over SRE: Zero Laptop Required (Mobile Tap)
-    SRE->>Appr: 1-Click Approve via Telegram / WhatsApp / Slack
     
     Appr->>Appr: Validate SHA-256 Token Hash & 10m TTL
     Appr->>VPC: Execute Sandboxed Command (e.g. kill idle connections)
@@ -57,12 +54,8 @@ Amber dispatches actionable incident cards simultaneously across configured chan
   - `/simulate` — Trigger an instant P0 connection pool saturation simulation.
 * **1-Click Mobile Approvals:** Dispatches inline buttons (`InlineKeyboardButton`) with `callback_data="approve:<invocation_id>"` and `callback_data="reject:<invocation_id>"` for instantaneous mobile tap execution.
 
-### B. Self-Hosted WhatsApp Bridge (`amber-whatsapp-bridge` :3001)
-* **Architecture:** Dedicated containerized Node.js microservice (`services/whatsapp-bridge`) running `@whiskeysockets/baileys`.
-* **Zero Per-Message Cost:** Connects directly via WhatsApp Web socket session without expensive third-party Twilio per-message fees.
 * **Live Endpoints:**
   - `GET /` — Web QR code display for quick phone linking.
-  - `GET /status` — Verification of active WhatsApp connection session.
   - `POST /send-alert` — Dispatches formatted Markdown alert cards and approval links directly to the on-call engineer's mobile device.
 
 ### C. Slack Interactive Block Kit (`backend/app/integrations/slack.py`)
@@ -104,4 +97,3 @@ Execution of a remediation command is only the first half of incident resolution
 
 * **Automated Metric Verification:** Ingests p99 latency, connection pool saturation, error rates, and CPU/memory metrics.
 * **Auto-Rollback Trigger:** If error rates exceed baseline or health probes return HTTP 5xx within 5 seconds post-execution, Amber immediately dispatches a pre-computed rollback command.
-* **Non-Repudiation Audit Trail:** All diagnostic logs, approval timestamps, approver identity (Telegram username, WhatsApp number, Slack handle), and execution outputs are persisted to PostgreSQL and indexed for automated post-mortem generation.

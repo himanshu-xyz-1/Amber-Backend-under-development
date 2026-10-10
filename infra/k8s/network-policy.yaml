@@ -39,7 +39,7 @@ spec:
           port: 5432
         - protocol: TCP
           port: 6379
-    # Allow outbound HTTPS to Gemini API and Slack/WhatsApp/Telegram webhook APIs
+    # Allow outbound HTTPS to Gemini API and Slack/Telegram webhook APIs
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0

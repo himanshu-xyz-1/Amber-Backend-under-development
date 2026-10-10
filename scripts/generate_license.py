@@ -42,7 +42,6 @@ TIER_CONFIG = {
             "post_mortem",
             "slack_approvals",
             "telegram_bot",
-            "whatsapp_bridge",
             "auto_remediation",
             "hitl_sha256"
         ]
@@ -56,7 +55,6 @@ TIER_CONFIG = {
             "post_mortem",
             "slack_approvals",
             "telegram_bot",
-            "whatsapp_bridge",
             "auto_remediation",
             "hitl_sha256",
             "air_gapped_runtime",
@@ -73,7 +71,6 @@ TIER_CONFIG = {
             "post_mortem",
             "slack_approvals",
             "telegram_bot",
-            "whatsapp_bridge",
             "auto_remediation",
             "hitl_sha256",
             "white_label",

@@ -29,7 +29,6 @@ flowchart TD
 
     subgraph On-Call SRE Channels
         MESH --> SLACK[Slack 1-Click]
-        MESH --> WA[WhatsApp Verified]
         MESH --> TG[Telegram Bot]
     end
 
@@ -75,7 +74,6 @@ Access to Amber's management and incident interfaces is governed by machine-to-m
 |---|---|---|
 | **CTO / VP Eng** | Global Governance | Global kill-switch, audit log exports, MTTR telemetry, security policy changes |
 | **SRE Lead** | System Administration | Runbook authoring, tool allowlist configuration, post-mortem indexing approval |
-| **On-Call SRE** | Incident Responder | Approve/Reject 1-click HITL tokens via Slack/WhatsApp/Telegram, trigger manual rollbacks |
 | **Service Dev** | Service Observer | Read-only incident timeline inspection for owned microservices |
 
 ---

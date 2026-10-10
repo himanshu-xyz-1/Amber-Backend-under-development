@@ -454,7 +454,7 @@ class TestGeminiAndOllamaProtocols:
 
     @pytest.mark.asyncio
     async def test_air_gapped_dispatcher_suppresses_external_channels(self):
-        """When AIR_GAPPED is True, dispatcher must not call external Slack/Telegram/WhatsApp APIs."""
+        """When AIR_GAPPED is True, dispatcher must not call external Slack/Telegram APIs."""
         from unittest.mock import patch
 
         from backend.app.integrations.dispatcher import dispatch_incident_notifications
@@ -463,5 +463,5 @@ class TestGeminiAndOllamaProtocols:
             result = await dispatch_incident_notifications(
                 incident_data={"id": "test-inc-1", "title": "Test outage"}
             )
-            assert result == {"slack": False, "telegram": False, "whatsapp": False}
+            assert result == {"slack": False, "telegram": False}
 
