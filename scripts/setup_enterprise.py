@@ -241,18 +241,43 @@ def setup_notifications(env_path):
             set_key(str(env_path), "SLACK_WEBHOOK_URL", slack_url)
             print(f"    {GREEN}✔ Slack alerts configured.{NC}")
 
-    # 2. Telegram
+    # 2. Telegram (Centralized Official Amber Bot)
     if "2" in selected:
-        print(f"\n  {BOLD}▶ TELEGRAM SETUP:{NC}")
-        print(f"    1. Open Telegram -> Search {CYAN}@BotFather{NC} -> Send {BOLD}/newbot{NC}.")
-        print(f"    2. Name your bot (e.g. AcmeAmberBot) and copy the API Token.")
-        tg_token = input("    Paste Telegram Bot Token: ").strip()
-        if tg_token:
-            set_key(str(env_path), "TELEGRAM_BOT_TOKEN", tg_token)
-            tg_chat = input("    Paste Telegram Chat ID (your team group ID): ").strip()
-            if tg_chat:
-                set_key(str(env_path), "TELEGRAM_CHAT_ID", tg_chat)
-                print(f"    {GREEN}✔ Telegram bot configured.{NC}")
+        print(f"\n  {BOLD}▶ TELEGRAM INSTANT ON-CALL SETUP:{NC}")
+        print(f"    1. Open Telegram on your phone or desktop.")
+        print(f"    2. Search for the official Amber bot: {CYAN}{BOLD}@ambersre_alert_bot{NC}")
+        print(f"       Direct link: {CYAN}https://t.me/ambersre_alert_bot{NC}")
+        print(f"    3. Click {BOLD}Start{NC} or send {BOLD}/start{NC}.")
+        print(f"       (The bot will give you your unique Receiver Chat ID)")
+
+        # Always pre-fill our centralized Amber Bot Token
+        AMBER_OFFICIAL_TG_TOKEN = "8927729248:AAEcTTtjQY0ZOgK93ChuZ5K-KOO5iud5izI"
+        set_key(str(env_path), "TELEGRAM_BOT_TOKEN", AMBER_OFFICIAL_TG_TOKEN)
+
+        tg_chat = input(f"\n    {BOLD}Enter your Telegram Receiver Chat ID:{NC} ").strip()
+        if tg_chat:
+            set_key(str(env_path), "TELEGRAM_CHAT_ID", tg_chat)
+            set_key(str(env_path), "NOTIFICATION_CHANNEL", "telegram")
+            print(f"    {GREEN}✔ Telegram Receiver ID paired: {tg_chat}{NC}")
+            
+            # Send immediate handshake test
+            try:
+                import httpx
+                resp = httpx.post(
+                    f"https://api.telegram.org/bot{AMBER_OFFICIAL_TG_TOKEN}/sendMessage",
+                    json={
+                        "chat_id": tg_chat,
+                        "text": f"⚡ <b>AMBER SRE — ON-CALL PAIRING VERIFIED!</b>\n\n"
+                                f"🏢 <b>Organization:</b> {get_key(str(env_path), 'ORGANIZATION_NAME') or 'Enterprise'}\n"
+                                f"🔒 <b>Device Status:</b> Successfully paired for real-time P0 incident triage & 1-click approvals.",
+                        "parse_mode": "HTML"
+                    },
+                    timeout=5.0
+                )
+                if resp.status_code == 200:
+                    print(f"    {GREEN}✔ Immediate verification ping sent to your Telegram!{NC}")
+            except Exception:
+                pass
 
     # 3. WhatsApp
     if "3" in selected:
