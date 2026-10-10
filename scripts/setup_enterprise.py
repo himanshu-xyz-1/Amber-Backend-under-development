@@ -71,7 +71,11 @@ def verify_license(env_path):
         print(f"To use the free community version, run: {BOLD}./amber community{NC}\n")
         sys.exit(1)
 
-    manager = LicenseManager(key_string=license_key)
+    # Clean any accidental env prefix e.g. AMBER_LICENSE_KEY=amb_live_...
+    if "=" in license_key:
+        license_key = license_key.split("=", 1)[1].strip().strip('"').strip("'")
+
+    manager = LicenseManager(token=license_key)
     if not manager.is_valid or manager.tier == "community":
         print(f"\n{RED}❌ Cryptographic Verification Failed: Invalid or expired license key.{NC}")
         print(f"Please contact support@ambersre.xyz to obtain a valid license.\n")
